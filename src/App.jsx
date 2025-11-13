@@ -265,6 +265,9 @@ const BANK_DETAILS = {
   email: "pagos@neosushi.cl",
 };
 
+// --- CLAVE PARA ALMACENAR DATOS DE USUARIO ---
+const STORAGE_KEY = 'neoSushiUserData';
+
 // --- HELPERS ---
 const formatPrice = (price) => `$${price.toLocaleString("es-CL")}`;
 const getFillingById = (id) =>
@@ -877,9 +880,17 @@ function CartDrawer({
   onCheckout,
   onClearCart,
 }) {
+  const cartBodyRef = React.useRef(null); // Ref para el cuerpo del carrito
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
+      // --- INICIO: SCROLL AL TOPE ---
+      // Resetea el scroll del carrito al abrir
+      if (cartBodyRef.current) {
+        cartBodyRef.current.scrollTop = 0;
+      }
+      // --- FIN: SCROLL AL TOPE ---
     } else {
       document.body.style.overflow = "unset";
     }
@@ -908,7 +919,10 @@ function CartDrawer({
             <X size={24} />
           </button>
         </div>
-        <div className="flex-grow overflow-y-auto p-4 space-y-4 custom-scrollbar bg-slate-950/50">
+        <div
+          ref={cartBodyRef} // Añadir ref al div scrollable
+          className="flex-grow overflow-y-auto p-4 space-y-4 custom-scrollbar bg-slate-950/50"
+        >
           {items.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-slate-500 opacity-50">
               <ShoppingBag size={64} className="mb-4" />
@@ -1044,16 +1058,47 @@ function CartDrawer({
 
 // --- CHECKOUT ACTUALIZADO CON LÓGICA DE HORARIO ---
 function CheckoutView({ cartItems, total, onBack, onCompleteOrder }) {
-  const [formData, setFormData] = useState({
-    fullName: "",
-    phone: "",
-    deliveryType: "delivery",
-    address: "",
-    commune: "",
-    reference: "",
-    paymentMethod: "transfer",
-    cashAmount: "",
+  // --- INICIO: LÓGICA DE AUTOCOMPLETAR ---
+  // Carga los datos del usuario desde localStorage o usa un estado vacío
+  const [formData, setFormData] = useState(() => {
+    try {
+      const savedData = localStorage.getItem(STORAGE_KEY);
+      if (savedData) {
+        // Asegurarnos de que los campos esenciales no sean undefined
+        const parsed = JSON.parse(savedData);
+        return {
+          fullName: parsed.fullName || "",
+          phone: parsed.phone || "",
+          deliveryType: parsed.deliveryType || "delivery",
+          address: parsed.address || "",
+          commune: parsed.commune || "",
+          reference: parsed.reference || "",
+          paymentMethod: parsed.paymentMethod || "transfer",
+          cashAmount: parsed.cashAmount || "",
+        };
+      }
+    } catch (e) {
+      console.error("No se pudo cargar los datos del usuario:", e);
+    }
+    // Estado por defecto si no hay nada guardado
+    return {
+      fullName: "",
+      phone: "",
+      deliveryType: "delivery",
+      address: "",
+      commune: "",
+      reference: "",
+      paymentMethod: "transfer",
+      cashAmount: "",
+    };
   });
+
+  // Guardar en localStorage cada vez que formData cambie
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+  }, [formData]);
+  // --- FIN: LÓGICA DE AUTOCOMPLETAR ---
+
   // Nuevo estado para el modal de error
   const [showClosedError, setShowClosedError] = useState(false);
 
@@ -1596,7 +1641,7 @@ function Footer() {
 
 function HeroSection() {
   return (
-    <header className="relative overflow-hidden px-6 py-32 sm:py-48 text-center">
+    <header className="relative overflow-hidden px-6 text-center min-h-screen flex flex-col justify-center">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[120px] -z-10"></div>
       <div className="absolute -top-40 -right-40 w-[500px] h-[500px] bg-fuchsia-500/10 rounded-full blur-[100px] -z-10"></div>
       <h1 className="text-5xl sm:text-7xl font-black mb-6 leading-tight text-white animate-in fade-in duration-500">
