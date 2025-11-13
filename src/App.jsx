@@ -25,11 +25,13 @@ import {
   Phone,
   ArrowDown,
   Eye,
+  Menu, // Importamos el ícono de menú hamburguesa
 } from "lucide-react";
 
 // --- DATOS DE NEGOCIO ---
 const LOCAL_PHONE_NUMBER = "56912345678";
 const WHATSAPP_LINK = `https://wa.me/${LOCAL_PHONE_NUMBER}`;
+const LOCAL_COMMUNE = "Santiago"; // <<< ¡IMPORTANTE! Cambia esto por la comuna de tu local (ej: "Providencia", "Quilicura", etc.)
 
 // --- LÓGICA DE HORARIOS ---
 const STORE_HOURS = {
@@ -95,6 +97,7 @@ const MODIFIABLE_PROMOS = [
     name: "Neo Start (12p)",
     basePrice: 6490,
     description: "1 Roll clásico. Configuración base incluida.",
+    image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=800&q=80",
     rolls: [
       {
         id: "p1_r1",
@@ -110,6 +113,7 @@ const MODIFIABLE_PROMOS = [
     name: "Cyber Duo (30p)",
     basePrice: 16990,
     description: "3 Rolls variados para compartir.",
+    image: "https://images.unsplash.com/photo-1611143669185-af224c5e3252?auto=format&fit=crop&w=800&q=80",
     rolls: [
       {
         id: "p2_r1",
@@ -139,6 +143,7 @@ const MODIFIABLE_PROMOS = [
     name: "Techno Friends (50p)",
     basePrice: 26990,
     description: "5 Rolls. La combinación completa.",
+    image: "https://images.unsplash.com/photo-1553621042-f6e147245754?auto=format&fit=crop&w=800&q=80",
     rolls: [
       {
         id: "p3_r1",
@@ -186,6 +191,7 @@ const STATIC_PROMOS = [
     description: "10 California (Sésamo), 10 Frito (Pollo, Queso).",
     basePrice: 10990, // Precio fijo
     type: "STATIC",
+    image: "https://images.unsplash.com/photo-1617196019474-271a6f25f8da?auto=format&fit=crop&w=800&q=80",
     rolls: [
       {
         id: "s1_r1",
@@ -209,6 +215,7 @@ const STATIC_PROMOS = [
     description: "10 Rolls envueltos en Salmón con palta y queso.",
     basePrice: 8990,
     type: "STATIC",
+    image: "https://images.unsplash.com/photo-1583623025817-d180a2221d0a?auto=format&fit=crop&w=800&q=80",
     rolls: [
       {
         id: "s2_r1",
@@ -228,6 +235,7 @@ const EXTRAS = [
     description: "Coca-Cola, Fanta o Sprite.",
     price: 1500,
     type: "EXTRA",
+    image: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=800&q=80",
   },
   {
     id: "e2",
@@ -235,6 +243,7 @@ const EXTRAS = [
     description: "Empanaditas japonesas de cerdo.",
     price: 3500,
     type: "EXTRA",
+    image: "https://images.unsplash.com/photo-1496116218417-1a781b1c423c?auto=format&fit=crop&w=800&q=80",
   },
   {
     id: "e3",
@@ -242,6 +251,7 @@ const EXTRAS = [
     description: "Botellita 50cc.",
     price: 500,
     type: "EXTRA",
+    image: "https://images.unsplash.com/photo-1598353386499-9d45c8677771?auto=format&fit=crop&w=800&q=80",
   },
 ];
 // --- FIN DATOS ---
@@ -857,7 +867,15 @@ function CustomRollBuilder({ onClose, onAddToCart }) {
 }
 
 // --- COMPONENTE CORREGIDO ---
-function CartDrawer({ isOpen, onClose, items, onRemove, total, onCheckout }) {
+function CartDrawer({
+  isOpen,
+  onClose,
+  items,
+  onRemove,
+  total,
+  onCheckout,
+  onClearCart,
+}) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -914,15 +932,14 @@ function CartDrawer({ isOpen, onClose, items, onRemove, total, onCheckout }) {
                         : "Extra"}
                     </p>
                   </div>
-                  {/* --- LÍNEA CORREGIDA --- */}
                   {/* Se añadió pr-10 para dar espacio al botón de eliminar */}
                   <span className="font-bold text-white pr-10">
                     {formatPrice(item.totalPrice)}
                   </span>
                 </div>
-                {item.type === "PROMO" ||
-                item.type === "CUSTOM" ||
-                item.type === "STATIC" ? (
+                {/* --- INICIO: LÓGICA DE RENDERIZADO DE ITEMS CORREGIDA --- */}
+                {item.type === "PROMO" || item.type === "STATIC" ? (
+                  // Lógica para promos (modificables o estáticas)
                   <div className="p-4 space-y-3 text-sm border-t border-white/5">
                     {(item.configuredRolls || item.rolls).map((roll, idx) => (
                       <div
@@ -932,7 +949,11 @@ function CartDrawer({ isOpen, onClose, items, onRemove, total, onCheckout }) {
                         <div className="text-slate-200 font-medium">
                           {roll.name}{" "}
                           <span className="text-slate-500 text-xs">
-                            ({WRAPPERS[roll.wrapperKey].name})
+                            (
+                            {WRAPPERS[roll.wrapperKey]
+                              ? WRAPPERS[roll.wrapperKey].name
+                              : "N/A"}
+                            )
                           </span>
                         </div>
                         <div className="text-slate-400 text-xs leading-tight mt-1">
@@ -943,11 +964,33 @@ function CartDrawer({ isOpen, onClose, items, onRemove, total, onCheckout }) {
                       </div>
                     ))}
                   </div>
+                ) : item.type === "CUSTOM" ? (
+                  // Lógica específica para Roll Custom (Neo-Lab)
+                  <div className="p-4 space-y-3 text-sm border-t border-white/5">
+                    <div className="pl-3 border-l-2 border-slate-700">
+                      <div className="text-slate-200 font-medium">
+                        Envoltura:{" "}
+                        <span className="text-cyan-300 text-xs">
+                          {WRAPPERS[item.wrapperKey]
+                            ? WRAPPERS[item.wrapperKey].name
+                            : "N/A"}
+                        </span>
+                      </div>
+                      <div className="text-slate-400 text-xs leading-tight mt-1">
+                        Rellenos:{" "}
+                        {item.fillings
+                          .map((fid) => getFillingById(fid).name)
+                          .join(" • ")}
+                      </div>
+                    </div>
+                  </div>
                 ) : (
+                  // Lógica para Extras (bebidas, etc.)
                   <p className="p-4 text-sm text-slate-400 border-t border-white/5">
                     {item.description}
                   </p>
                 )}
+                {/* --- FIN: LÓGICA DE RENDERIZADO DE ITEMS CORREGIDA --- */}
                 <button
                   onClick={() => onRemove(item.uuid)}
                   className="absolute top-2 right-2 p-2 text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all bg-slate-900/80 rounded-full"
@@ -965,15 +1008,32 @@ function CartDrawer({ isOpen, onClose, items, onRemove, total, onCheckout }) {
               {formatPrice(total)}
             </span>
           </div>
-          {/* LÓGICA DE BOTÓN DESHABILITADO */}
-          <GlowingButton
-            variant="primary"
-            fullWidth
-            disabled={items.length === 0}
-            onClick={onCheckout}
-          >
-            Ir a Pagar
-          </GlowingButton>
+          {/* LÓGICA DE BOTÓN DESHABILITADO Y NUEVOS BOTONES */}
+          <div className="space-y-3">
+            <GlowingButton
+              variant="primary"
+              fullWidth
+              disabled={items.length === 0}
+              onClick={onCheckout}
+            >
+              Continuar con Pedido
+            </GlowingButton>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={onClose}
+                className="flex items-center justify-center gap-2 p-3 rounded-xl border border-white/10 text-slate-400 hover:text-white hover:bg-white/5 transition-colors text-sm font-medium"
+              >
+                <ArrowLeft size={16} /> Seguir Viendo
+              </button>
+              <button
+                onClick={onClearCart}
+                disabled={items.length === 0}
+                className="flex items-center justify-center gap-2 p-3 rounded-xl border border-red-500/20 text-red-400 hover:bg-red-500/10 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Trash2 size={16} /> Vaciar Todo
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </>
@@ -995,6 +1055,25 @@ function CheckoutView({ cartItems, total, onBack, onCompleteOrder }) {
   });
   // Nuevo estado para el modal de error
   const [showClosedError, setShowClosedError] = useState(false);
+
+  // --- NUEVA LÓGICA DE CÁLCULO DE DESPACHO ---
+  const { deliveryFee, finalTotal } = useMemo(() => {
+    let fee = 0;
+    if (formData.deliveryType === "delivery") {
+      const commune = formData.commune.trim().toLowerCase();
+      if (commune.length > 0) {
+        // Comparamos en minúsculas y sin espacios
+        if (commune === LOCAL_COMMUNE.toLowerCase()) {
+          fee = 2000;
+        } else {
+          fee = 3000;
+        }
+      }
+      // Si la comuna está vacía, la tarifa es 0 (aún no se cobra)
+    }
+    return { deliveryFee: fee, finalTotal: total + fee };
+  }, [total, formData.deliveryType, formData.commune]);
+  // --- FIN LÓGICA DE CÁLCULO ---
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -1285,12 +1364,38 @@ function CheckoutView({ cartItems, total, onBack, onCompleteOrder }) {
               </div>
             ))}
           </div>
-          <div className="border-t border-white/10 pt-4 flex justify-between items-center mb-6">
-            <span className="text-lg text-slate-400">Total a Pagar</span>
-            <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-fuchsia-500">
-              {formatPrice(total)}
-            </span>
+
+          {/* --- INICIO: SECCIÓN DE TOTALES ACTUALIZADA --- */}
+          <div className="border-t border-white/10 pt-4 space-y-2 mb-6">
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-slate-400">Subtotal</span>
+              <span className="font-medium text-slate-300">
+                {formatPrice(total)}
+              </span>
+            </div>
+
+            {/* Mostrar despacho solo si es delivery y se ha ingresado comuna */}
+            {deliveryFee > 0 && (
+              <div className="flex justify-between items-center text-sm animate-in fade-in duration-300">
+                <span className="text-slate-400">Despacho</span>
+                <span className="font-medium text-slate-300">
+                  {formatPrice(deliveryFee)}
+                </span>
+              </div>
+            )}
+
+            {/* Separador */}
+            <div className="!mt-4 pt-4 border-t border-white/5"></div>
+
+            <div className="flex justify-between items-center">
+              <span className="text-lg text-slate-400">Total a Pagar</span>
+              <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-fuchsia-500">
+                {formatPrice(finalTotal)}
+              </span>
+            </div>
           </div>
+          {/* --- FIN: SECCIÓN DE TOTALES ACTUALIZADA --- */}
+
           {/* Botón de envío que ahora llama a handleSubmit CON la validación de horario */}
           <GlowingButton
             variant="secondary"
@@ -1327,7 +1432,7 @@ function ThankYouView({ onReset }) {
         Tu pedido se encuentra en proceso de preparación en nuestro laboratorio.
       </p>
       <div className="bg-fuchsia-900/30 border border-fuchsia-500/30 p-4 rounded-xl max-w-md text-fuchsia-200 text-sm mb-8 flex items-start gap-3">
-        <Info className="shrink-0 mt-0.5" />
+        <Info className="shrink-0" />
         <p>
           Si elegiste pagar con <strong>Transferencia</strong>, recuerda enviar
           el comprobante al WhatsApp que se abrirá a continuación para validar
@@ -1493,17 +1598,19 @@ function HeroSection() {
         Explora nuestras promos modificables, packs estáticos o diseña un roll
         desde cero en el Neo-Lab.
       </p>
-      <GlowingButton
-        variant="primary"
-        className="px-10 py-4 text-lg animate-in fade-in duration-500 delay-200"
-        onClick={() =>
-          document
-            .getElementById("menu")
-            ?.scrollIntoView({ behavior: "smooth" })
-        }
-      >
-        Ver Menú <ArrowDown size={20} />
-      </GlowingButton>
+      <div className="flex justify-center animate-in fade-in duration-500 delay-200">
+        <GlowingButton
+          variant="primary"
+          className="px-10 py-4 text-lg"
+          onClick={() =>
+            document
+              .getElementById("menu")
+              ?.scrollIntoView({ behavior: "smooth" })
+          }
+        >
+          Ver Menú <ArrowDown size={20} />
+        </GlowingButton>
+      </div>
     </header>
   );
 }
@@ -1529,11 +1636,45 @@ function App() {
   const [selectedStaticPromo, setSelectedStaticPromo] = useState(null);
   const [isNeoLabOpen, setIsNeoLabOpen] = useState(false);
   const [view, setView] = useState("MENU");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Nuevo estado
+  const [isMenuDropdownOpen, setIsMenuDropdownOpen] = useState(false); // Estado para el dropdown de menú
+  const menuRef = React.useRef(null); // Ref para el dropdown
 
   const cartTotal = useMemo(
     () => cartItems.reduce((acc, item) => acc + item.totalPrice, 0),
     [cartItems]
   );
+
+  // --- CERRAR DROPDOWN AL HACER CLIC FUERA ---
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsMenuDropdownOpen(false);
+      }
+    }
+    // Bind the event listener
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      // Unbind the event listener on clean up
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [menuRef]);
+  // --- FIN CERRAR DROPDOWN ---
+
+  // --- CERRAR DROPDOWN AL HACER SCROLL ---
+  useEffect(() => {
+    function handleScroll() {
+      if (isMenuDropdownOpen) {
+        setIsMenuDropdownOpen(false);
+      }
+    }
+    // Escuchar en 'window' es más fiable para el scroll de la página
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [isMenuDropdownOpen]); // Solo se activa si el dropdown está abierto
+  // --- FIN CERRAR DROPDOWN SCROLL ---
 
   const handleSimpleAddToCart = (item) => {
     setCartItems([
@@ -1557,6 +1698,22 @@ function App() {
   };
 
   const generateWhatsAppMessage = (formData) => {
+    // --- INICIO: CÁLCULO DE DESPACHO PARA WHATSAPP ---
+    let deliveryFee = 0;
+    if (formData.deliveryType === "delivery") {
+      const commune = formData.commune.trim().toLowerCase();
+      if (commune.length > 0) {
+        // Asumimos que si se envió, la comuna es válida
+        if (commune === LOCAL_COMMUNE.toLowerCase()) {
+          deliveryFee = 2000;
+        } else {
+          deliveryFee = 3000;
+        }
+      }
+    }
+    const finalTotal = cartTotal + deliveryFee;
+    // --- FIN: CÁLCULO DE DESPACHO ---
+
     let msg = `*NUEVO PEDIDO WEB - NEO SUSHI*\n--------------------------------\n*Cliente:* ${
       formData.fullName
     }\n*Teléfono:* ${formData.phone}\n*Entrega:* ${
@@ -1594,9 +1751,17 @@ function App() {
         msg += `   ➤ ${item.description}\n`;
       }
     });
-    msg += `\n--------------------------------\n*TOTAL: ${formatPrice(
-      cartTotal
-    )}*\n*Pago:* ${
+
+    // --- INICIO: TOTALES ACTUALIZADOS EN WHATSAPP ---
+    msg += `\n--------------------------------\n`;
+    if (deliveryFee > 0) {
+      msg += `*Subtotal:* ${formatPrice(cartTotal)}\n`;
+      msg += `*Despacho:* ${formatPrice(deliveryFee)}\n`;
+      msg += `*TOTAL (Inc. Despacho): ${formatPrice(finalTotal)}*\n`;
+    } else {
+      msg += `*TOTAL: ${formatPrice(finalTotal)}*\n`;
+    }
+    msg += `*Pago:* ${
       formData.paymentMethod === "transfer"
         ? "💳 TRANSFERENCIA"
         : `💵 EFECTIVO (Paga con: $${formData.cashAmount})`
@@ -1616,7 +1781,26 @@ function App() {
   };
 
   const scrollTo = (id) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    const element = document.getElementById(id);
+    if (!element) return;
+
+    const navElement = document.querySelector("nav"); // 1. Encontramos la barra de navegación
+    const navHeight = navElement ? navElement.offsetHeight : 0; // 2. Obtenemos su altura
+    const buffer = 24; // 3. Un pequeño espacio extra (como en tu 'imagen 2')
+
+    // 4. Calculamos la posición final
+    const elementPosition = element.getBoundingClientRect().top;
+    const offsetPosition =
+      elementPosition + window.pageYOffset - navHeight - buffer;
+
+    // 5. Hacemos scroll a esa posición calculada
+    window.scrollTo({
+      top: offsetPosition,
+      behavior: "smooth",
+    });
+
+    setIsMobileMenuOpen(false);
+    setIsMenuDropdownOpen(false); // <- Cierra el dropdown de menú
   };
 
   return (
@@ -1648,17 +1832,72 @@ function App() {
             >
               Inicio
             </a>
-            <a
-              href="#menu"
-              onClick={(e) => {
-                e.preventDefault();
-                setView("MENU");
-                scrollTo("menu");
-              }}
-              className="text-slate-300 hover:text-white transition-colors"
-            >
-              Menú
-            </a>
+
+            {/* --- INICIO: DROPDOWN DE MENÚ (RESTAURADO) --- */}
+            <div className="relative" ref={menuRef}>
+              <button
+                onClick={() => setIsMenuDropdownOpen(!isMenuDropdownOpen)}
+                className="text-slate-300 hover:text-white transition-colors flex items-center gap-1"
+              >
+                Menú
+                <ArrowDown
+                  size={16}
+                  className={`transition-transform duration-200 ${
+                    isMenuDropdownOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+              {isMenuDropdownOpen && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-64 bg-[#0c0c1d] border border-white/10 rounded-xl shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-200">
+                  <a
+                    href="#menu-modificables"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setView("MENU");
+                      scrollTo("menu-modificables");
+                    }}
+                    className="block px-4 py-2 rounded-lg text-sm text-slate-300 hover:bg-cyan-500/20 hover:text-cyan-300"
+                  >
+                    Promos Modificables
+                  </a>
+                  <a
+                    href="#menu-estaticas"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setView("MENU");
+                      scrollTo("menu-estaticas");
+                    }}
+                    className="block px-4 py-2 rounded-lg text-sm text-slate-300 hover:bg-cyan-500/20 hover:text-cyan-300"
+                  >
+                    Promos Estáticas
+                  </a>
+                  <a
+                    href="#neolab"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setView("MENU");
+                      scrollTo("neolab");
+                    }}
+                    className="block px-4 py-2 rounded-lg text-sm text-slate-300 hover:bg-cyan-500/20 hover:text-cyan-300"
+                  >
+                    Crea tu Roll (Neo-Lab)
+                  </a>
+                  <a
+                    href="#menu-bebidas"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setView("MENU");
+                      scrollTo("menu-bebidas");
+                    }}
+                    className="block px-4 py-2 rounded-lg text-sm text-slate-300 hover:bg-cyan-500/20 hover:text-cyan-300"
+                  >
+                    Bebidas y Otros
+                  </a>
+                </div>
+              )}
+            </div>
+            {/* --- FIN: DROPDOWN DE MENÚ --- */}
+
             <a
               href="#nosotros"
               onClick={(e) => {
@@ -1697,16 +1936,127 @@ function App() {
                     {cartItems.length}
                   </span>
                 )}
-                {cartTotal > 0 && (
-                  <span className="text-sm font-bold text-cyan-300 hidden sm:block">
-                    {formatPrice(cartTotal)}
-                  </span>
-                )}
+                <span className="text-sm font-bold text-cyan-300">
+                  {formatPrice(cartTotal)}
+                </span>
               </button>
             )}
+
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="p-2 bg-white/5 rounded-xl text-slate-400 hover:text-white md:hidden"
+            >
+              <Menu size={24} />
+            </button>
           </div>
         </div>
       </nav>
+
+      {/* --- INICIO: Modal Menú Móvil (CORREGIDO) --- */}
+      {/* Se movió fuera del <nav> y se quitó backdrop-blur-xl para asegurar opacidad */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-[100] bg-slate-950 md:hidden animate-in fade-in duration-300">
+          <div className="flex justify-end p-4">
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="p-2 bg-white/10 rounded-full text-white hover:bg-white/20"
+            >
+              <X size={24} />
+            </button>
+          </div>
+          <div className="flex flex-col items-center justify-center h-[80vh] gap-8">
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                setView("MENU");
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                setIsMobileMenuOpen(false);
+              }}
+              className="text-2xl font-bold text-white hover:text-cyan-400"
+            >
+              Inicio
+            </a>
+
+            {/* --- INICIO: ENLACES DE MENÚ MÓVIL (CORREGIDO) --- */}
+            {/* Reemplazamos el 'Menú' simple por las 4 categorías */}
+            <div className="flex flex-col items-center gap-8">
+              <a
+                href="#menu-modificables"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setView("MENU");
+                  scrollTo("menu-modificables");
+                }}
+                className="text-2xl font-bold text-white hover:text-cyan-400"
+              >
+                Promos Modificables
+              </a>
+              <a
+                href="#menu-estaticas"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setView("MENU");
+                  scrollTo("menu-estaticas");
+                }}
+                className="text-2xl font-bold text-white hover:text-cyan-400"
+              >
+                Promos Estáticas
+              </a>
+              <a
+                href="#neolab"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setView("MENU");
+                  scrollTo("neolab");
+                }}
+                className="text-2xl font-bold text-white hover:text-cyan-400"
+              >
+                Crea tu Roll
+              </a>
+              <a
+                href="#menu-bebidas"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setView("MENU");
+                  scrollTo("menu-bebidas");
+                }}
+                className="text-2xl font-bold text-white hover:text-cyan-400"
+              >
+                Bebidas y Otros
+              </a>
+            </div>
+            {/* --- FIN: ENLACES DE MENÚ MÓVIL --- */}
+
+            <a
+              href="#nosotros"
+              onClick={(e) => {
+                e.preventDefault();
+                setView("MENU");
+                scrollTo("nosotros");
+              }}
+              className="text-2xl font-bold text-white hover:text-cyan-400"
+            >
+              Nosotros
+            </a>
+            <div className="flex gap-6 mt-8">
+              <a
+                href="#"
+                className="p-4 bg-white/5 rounded-full text-slate-400 hover:text-cyan-400"
+              >
+                <Instagram size={32} />
+              </a>
+              <a
+                href="#"
+                className="p-4 bg-white/5 rounded-full text-slate-400 hover:text-blue-400"
+              >
+                <Facebook size={32} />
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* --- FIN: Modal Menú Móvil --- */}
 
       <div className="grow">
         {view === "MENU" && (
@@ -1714,7 +2064,10 @@ function App() {
             <HeroSection />
 
             <section id="menu" className="container mx-auto px-4 sm:px-6 py-20">
-              <h2 className="text-3xl font-black text-white mb-4 border-l-4 border-cyan-500 pl-4">
+              <h2
+                id="menu-modificables"
+                className="text-3xl font-black text-white mb-4 border-l-4 border-cyan-500 pl-4"
+              >
                 Promociones Modificables
               </h2>
               <p className="text-slate-400 text-sm mb-8 max-w-2xl pl-5">
@@ -1727,10 +2080,24 @@ function App() {
                     key={promo.id}
                     className="bg-slate-900/40 border border-white/5 rounded-3xl overflow-hidden hover:border-cyan-500/50 transition-all flex flex-col group"
                   >
-                    <div className="h-40 bg-[#0a0a1a] relative flex items-center justify-center">
-                      <span className="text-7xl font-black text-white/10">
-                        {promo.rolls.reduce((acc, r) => acc + r.pieces, 0)}p
-                      </span>
+                    <div className="h-48 overflow-hidden relative group-hover:scale-105 transition-transform duration-500">
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a1a] to-transparent z-10" />
+                      <img
+                        src={promo.image}
+                        alt={promo.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src =
+                            "https://placehold.co/800x400/1e293b/94a3b8?text=Sin+Imagen";
+                        }}
+                      />
+                      <div className="absolute bottom-0 left-0 p-4 z-20">
+                        <span className="px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-xs font-bold backdrop-blur-md">
+                          {promo.rolls.reduce((acc, r) => acc + r.pieces, 0)}{" "}
+                          Piezas
+                        </span>
+                      </div>
                     </div>
                     <div className="p-5 flex flex-col grow">
                       <h4 className="text-xl font-bold text-white mb-2">
@@ -1760,7 +2127,10 @@ function App() {
                 ))}
               </div>
 
-              <h2 className="text-3xl font-black text-white mb-4 border-l-4 border-fuchsia-500 pl-4">
+              <h2
+                id="menu-estaticas"
+                className="text-3xl font-black text-white mb-4 border-l-4 border-fuchsia-500 pl-4"
+              >
                 Promociones Estáticas
               </h2>
               <p className="text-slate-400 text-sm mb-8 max-w-2xl pl-5">
@@ -1773,10 +2143,24 @@ function App() {
                     key={promo.id}
                     className="bg-slate-900/40 border border-white/5 rounded-3xl overflow-hidden hover:border-fuchsia-500/50 transition-all flex flex-col group"
                   >
-                    <div className="h-40 bg-[#0a0a1a] relative flex items-center justify-center">
-                      <span className="text-7xl font-black text-white/10">
-                        {promo.rolls.reduce((acc, r) => acc + r.pieces, 0)}p
-                      </span>
+                    <div className="h-48 overflow-hidden relative group-hover:scale-105 transition-transform duration-500">
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a1a] to-transparent z-10" />
+                      <img
+                        src={promo.image}
+                        alt={promo.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src =
+                            "https://placehold.co/800x400/1e293b/94a3b8?text=Sin+Imagen";
+                        }}
+                      />
+                      <div className="absolute bottom-0 left-0 p-4 z-20">
+                        <span className="px-3 py-1 rounded-full bg-fuchsia-500/20 border border-fuchsia-500/30 text-fuchsia-300 text-xs font-bold backdrop-blur-md">
+                          {promo.rolls.reduce((acc, r) => acc + r.pieces, 0)}{" "}
+                          Piezas
+                        </span>
+                      </div>
                     </div>
                     <div className="p-5 flex flex-col grow">
                       <h4 className="text-xl font-bold text-white mb-2">
@@ -1834,7 +2218,10 @@ function App() {
                 </GlowingButton>
               </div>
 
-              <h2 className="text-3xl font-black text-white mb-4 border-l-4 border-fuchsia-500 pl-4">
+              <h2
+                id="menu-bebidas"
+                className="text-3xl font-black text-white mb-4 border-l-4 border-fuchsia-500 pl-4"
+              >
                 Bebidas y Otros
               </h2>
               <p className="text-slate-400 text-sm mb-8 max-w-2xl pl-5">
@@ -1844,26 +2231,40 @@ function App() {
                 {EXTRAS.map((extra) => (
                   <div
                     key={extra.id}
-                    className="bg-slate-900/40 border border-white/5 rounded-3xl p-5 flex flex-col justify-between group hover:border-white/20"
+                    className="bg-slate-900/40 border border-white/5 rounded-3xl overflow-hidden flex flex-col group hover:border-white/20 transition-all"
                   >
-                    <div>
-                      <h4 className="text-lg font-bold text-white mb-1">
-                        {extra.name}
-                      </h4>
-                      <p className="text-slate-400 text-xs mb-4">
-                        {extra.description}
-                      </p>
+                    <div className="h-32 overflow-hidden relative">
+                      <img
+                        src={extra.image}
+                        alt={extra.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src =
+                            "https://placehold.co/800x400/1e293b/94a3b8?text=Sin+Imagen";
+                        }}
+                      />
                     </div>
-                    <div className="flex justify-between items-end">
-                      <p className="text-xl font-bold text-white">
-                        {formatPrice(extra.price)}
-                      </p>
-                      <GlowingButton
-                        variant="ghost"
-                        onClick={() => handleSimpleAddToCart(extra)}
-                      >
-                        Agregar
-                      </GlowingButton>
+                    <div className="p-5 flex flex-col justify-between grow">
+                      <div>
+                        <h4 className="text-lg font-bold text-white mb-1">
+                          {extra.name}
+                        </h4>
+                        <p className="text-slate-400 text-xs mb-4">
+                          {extra.description}
+                        </p>
+                      </div>
+                      <div className="flex justify-between items-end">
+                        <p className="text-xl font-bold text-white">
+                          {formatPrice(extra.price)}
+                        </p>
+                        <GlowingButton
+                          variant="ghost"
+                          onClick={() => handleSimpleAddToCart(extra)}
+                        >
+                          Agregar
+                        </GlowingButton>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -1930,6 +2331,7 @@ function App() {
               setIsCartOpen(false);
               setView("CHECKOUT");
             }}
+            onClearCart={() => setCartItems([])}
           />
         </>
       )}
