@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 
 // --- DATOS DE NEGOCIO ---
-const LOCAL_PHONE_NUMBER = "56912345678";
+const LOCAL_PHONE_NUMBER = "56959984791;
 const WHATSAPP_LINK = `https://wa.me/${LOCAL_PHONE_NUMBER}`;
 const LOCAL_COMMUNE = "Santiago"; // <<< ¡IMPORTANTE! Cambia esto por la comuna de tu local (ej: "Providencia", "Quilicura", etc.)
 
