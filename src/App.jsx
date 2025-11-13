@@ -30,17 +30,14 @@ import {
 
 // --- DATOS DE NEGOCIO ---
 // 1. NÚMERO DE TELÉFONO ACTUALIZADO
-const LOCAL_PHONE_NUMBER = "56959984791";
+const LOCAL_PHONE_NUMBER = "56944250890";
 const WHATSAPP_LINK = `https://wa.me/${LOCAL_PHONE_NUMBER}`;
 const LOCAL_COMMUNE = "Santiago"; // <<< ¡IMPORTANTE! Cambia esto por la comuna de tu local (ej: "Providencia", "Quilicura", etc.)
 
 // --- LÓGICA DE HORARIOS ---
-const STORE_HOURS = {
-  openDays: [2, 3, 4, 5, 6], // Martes (2) a Sábado (6). Domingo es 0, Lunes es 1.
-  openTime: 18, // 18:00 (6 PM)
-  closeTime: 24, // Cierra a medianoche (check es < 24, o sea 23:59)
-};
-const STORE_HOURS_STRING = "Mar - Sáb: 18:00 - 00:00 (Dom - Lun: Cerrado)";
+// Horarios actualizados según la imagen
+const STORE_HOURS_STRING =
+  "Mar - Jue: 14:00 - 22:00 | Vie - Dom: 14:00 - 23:00 (Lun: Cerrado)";
 // --- FIN LÓGICA DE HORARIOS ---
 
 // Tiers con slots fijos: 0=Básico, 1=Medio, 2=Especial
@@ -97,8 +94,8 @@ const VEGETARIAN_FILLINGS_DATA = FILLINGS.filter((f) =>
 // --- FIN: DATOS VEGETARIANOS ---
 
 const WRAPPERS = {
-  sesamo: { name: "Envuelto en Sésamo", price: 0 },
-  ciboulette: { name: "Envuelto en Ciboulette", price: 0 },
+  sesamo: { name: "Envuelto en Sésamo", price: 300 }, // Corregido: de 0 a 300
+  ciboulette: { name: "Envuelto en Ciboulette", price: 300 }, // Corregido: de 0 a 300
   frito: { name: "Frito en Panko", price: 500 },
   palta: { name: "Envuelto en Palta", price: 1000 },
   queso: { name: "Envuelto en Queso Crema", price: 1000 },
@@ -107,8 +104,8 @@ const WRAPPERS = {
 
 // --- INICIO: NUEVOS DATOS VEGETARIANOS (ENVOLTURAS) ---
 const VEGETARIAN_WRAPPERS = {
-  sesamo: { name: "Envuelto en Sésamo", price: 0 },
-  ciboulette: { name: "Envuelto en Ciboulette", price: 0 },
+  sesamo: { name: "Envuelto en Sésamo", price: 300 }, // Corregido: de 0 a 300
+  ciboulette: { name: "Envuelto en Ciboulette", price: 300 }, // Corregido: de 0 a 300
   frito: { name: "Frito en Panko", price: 500 },
   palta: { name: "Envuelto en Palta", price: 1000 },
   queso: { name: "Envuelto en Queso Crema", price: 1000 },
@@ -223,21 +220,24 @@ const STATIC_PROMOS = [
         name: "California Roll",
         pieces: 10,
         wrapper: "sesamo",
-        defaultFillings: ["kanikama", "palta_relleno", "queso"],
+        // Orden corregido: ["palta_relleno" (Básico), "queso" (Medio), "kanikama" (Especial)]
+        defaultFillings: ["palta_relleno", "queso", "kanikama"],
       },
       {
         id: "s1_r2",
         name: "Frito Roll",
         pieces: 10,
         wrapper: "frito",
-        defaultFillings: ["pollo", "queso", "cebollin"],
+        // Orden corregido: ["cebollin" (Básico), "queso" (Medio), "pollo" (Especial)]
+        defaultFillings: ["cebollin", "queso", "pollo"],
       },
     ],
   },
   {
     id: "s2",
     name: "Salmon Lover (10p)",
-    description: "10 Rolls envueltos en Salmón con palta y queso.",
+    // Descripción actualizada para incluir el Nivel 3
+    description: "10 Rolls envueltos en Salmón con palta, queso y kanikama.",
     basePrice: 8990,
     type: "STATIC",
     image: "https://images.unsplash.com/photo-1583623025817-d180a2221d0a?auto=format&fit=crop&w=800&q=80",
@@ -247,7 +247,8 @@ const STATIC_PROMOS = [
         name: "Salmon Roll",
         pieces: 10,
         wrapper: "salmon",
-        defaultFillings: ["palta_relleno", "queso", "ciboulette_relleno"],
+        // Corregido: ["palta_relleno" (B), "queso" (M), "kanikama" (E)]
+        defaultFillings: ["palta_relleno", "queso", "kanikama"],
       },
     ],
   },
@@ -286,7 +287,7 @@ const BANK_DETAILS = {
   tipo_cuenta: "Cuenta RUT",
   numero_cuenta: "12345678",
   rut: "12.345.678-9",
-  email: "pagos@neosushi.cl",
+  email: "neosushi.app.prueba@gmail.com",
 };
 
 // --- CLAVE PARA ALMACENAR DATOS DE USUARIO ---
@@ -308,35 +309,31 @@ const getTodayDateStr = () =>
     day: "numeric",
   });
 
+// --- Funciones de validación y formato de RUT eliminadas ---
+
 // --- NUEVA FUNCIÓN DE HORARIO ---
 const checkIfStoreIsOpen = () => {
   const now = new Date();
   const dayOfWeek = now.getDay(); // 0 = Domingo, 1 = Lunes, 2 = Martes...
   const currentHour = now.getHours(); // 0 - 23
 
-  const { openDays, openTime, closeTime } = STORE_HOURS;
-
-  if (!openDays.includes(dayOfWeek)) {
-    return false; // Cerrado este día
+  // Lunes (1): Cerrado
+  if (dayOfWeek === 1) {
+    return false;
   }
 
-  // Manejo de medianoche (ej. 18:00 a 00:00)
-  // Si la hora de cierre es 24 (medianoche)
-  if (closeTime === 24) {
-    return currentHour >= openTime; // Abierto desde las 18:00 hasta las 23:59
+  // Martes (2) a Jueves (4): 14:00 a 22:00
+  if (dayOfWeek >= 2 && dayOfWeek <= 4) {
+    return currentHour >= 14 && currentHour < 22;
   }
 
-  // Para horarios que cruzan medianoche (ej. 18:00 a 02:00 am) - No implementado, pero así sería
-  // if (closeTime < openTime) {
-  //   return currentHour >= openTime || currentHour < closeTime;
-  // }
-
-  // Horario normal (ej. 10:00 a 18:00)
-  if (currentHour < openTime || currentHour >= closeTime) {
-    return false; // Fuera de horario
+  // Viernes (5), Sábado (6) y Domingo (0): 14:00 a 23:00
+  if (dayOfWeek === 5 || dayOfWeek === 6 || dayOfWeek === 0) {
+    return currentHour >= 14 && currentHour < 23;
   }
 
-  return true;
+  // Por si acaso, aunque todos los días están cubiertos
+  return false;
 };
 // --- FIN HELPERS ---
 
@@ -850,7 +847,8 @@ function CustomRollBuilder({ onClose, onAddToCart }) {
                       {wrapper.name}
                     </span>
                     <span className="text-fuchsia-300 text-sm">
-                      {wrapper.price === 0 ? "Incluido" : `+$${wrapper.price}`}
+                      {/* Corregido: Solo muestra el precio si es mayor a 0 */}
+                      {wrapper.price > 0 && `+${formatPrice(wrapper.price)}`}
                     </span>
                   </button>
                 ))}
@@ -1016,7 +1014,8 @@ function VeggieRollBuilder({ onClose, onAddToCart }) {
                       {wrapper.name}
                     </span>
                     <span className="text-cyan-300 text-sm">
-                      {wrapper.price === 0 ? "Incluido" : `+$${wrapper.price}`}
+                      {/* Corregido: Solo muestra el precio si es mayor a 0 */}
+                      {wrapper.price > 0 && `+${formatPrice(wrapper.price)}`}
                     </span>
                   </button>
                 ))}
@@ -1273,16 +1272,9 @@ function CartDrawer({
               {formatPrice(total)}
             </span>
           </div>
-          {/* LÓGICA DE BOTÓN DESHABILITADO Y NUEVOS BOTONES */}
+          {/* LÓGICA DE BOTÓN DESHABILITADO Y NUEVOS BOTONES (ORDEN CAMBIADO) */}
           <div className="space-y-3">
-            <GlowingButton
-              variant="primary"
-              fullWidth
-              disabled={items.length === 0}
-              onClick={onCheckout}
-            >
-              Continuar con Pedido
-            </GlowingButton>
+            {/* "Seguir Viendo" y "Vaciar Todo" ahora están primero */}
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={onClose}
@@ -1298,6 +1290,16 @@ function CartDrawer({
                 <Trash2 size={16} /> Vaciar Todo
               </button>
             </div>
+
+            {/* "Continuar con Pedido" ahora está al final */}
+            <GlowingButton
+              variant="primary"
+              fullWidth
+              disabled={items.length === 0}
+              onClick={onCheckout}
+            >
+              Continuar con Pedido
+            </GlowingButton>
           </div>
         </div>
       </div>
@@ -1319,6 +1321,7 @@ function CheckoutView({ cartItems, total, onBack, onCompleteOrder }) {
         return {
           fullName: parsed.fullName || "",
           phone: parsed.phone || "",
+          // "rut" eliminado
           deliveryType: parsed.deliveryType || "delivery",
           address: parsed.address || "",
           commune: parsed.commune || "",
@@ -1334,6 +1337,7 @@ function CheckoutView({ cartItems, total, onBack, onCompleteOrder }) {
     return {
       fullName: "",
       phone: "",
+      // "rut" eliminado
       deliveryType: "delivery",
       address: "",
       commune: "",
@@ -1384,6 +1388,8 @@ function CheckoutView({ cartItems, total, onBack, onCompleteOrder }) {
       const rawValue = value.replace(/\D/g, "");
       // 2. Actualizar el estado solo con los números
       setFormData((prev) => ({ ...prev, [name]: rawValue }));
+    } else if (name === "rut") {
+      // Lógica de RUT eliminada, se maneja en 'else'
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
@@ -1391,6 +1397,7 @@ function CheckoutView({ cartItems, total, onBack, onCompleteOrder }) {
   };
   const isFormValid = useMemo(() => {
     if (!formData.fullName || formData.phone.length < 8) return false;
+    // Validación de RUT eliminada
     if (
       formData.deliveryType === "delivery" &&
       (!formData.address || !formData.commune)
@@ -1451,6 +1458,7 @@ function CheckoutView({ cartItems, total, onBack, onCompleteOrder }) {
                 placeholder="Ej: Juan Pérez"
               />
             </div>
+            {/* --- CAMPO DE RUT ELIMINADO --- */}
             <div>
               <label className="block text-sm text-slate-400 mb-1">
                 Teléfono (Solo números) *
@@ -1852,12 +1860,44 @@ function ThankYouView({ onReset }) {
         <Info className="shrink-0 mt-0.5" />
         <p className="text-left">
           Tu pedido ha sido enviado a nuestro WhatsApp. Si elegiste pagar con{" "}
-          <strong>Transferencia</strong>, por favor, realiza el pago a los datos
-          indicados y{" "}
+          <strong>Transferencia</strong>, por favor, realiza el pago a los{" "}
+          <strong>datos que se muestran a continuación</strong> y{" "}
           <strong>envía el comprobante al mismo chat de WhatsApp</strong> para
           confirmar tu orden.
         </p>
       </div>
+
+      {/* --- INICIO: DATOS DE TRANSFERENCIA AÑADIDOS --- */}
+      <div className="bg-slate-900/80 border border-slate-700 rounded-xl p-4 space-y-3 text-sm max-w-md w-full mb-8 animate-in fade-in duration-300">
+        <h4 className="font-bold text-white text-left mb-2 text-base">
+          Datos de Transferencia
+        </h4>
+        {Object.entries(BANK_DETAILS).map(([key, value]) => (
+          <div
+            key={key}
+            className="flex justify-between items-center py-2 border-b border-slate-800 last:border-0"
+          >
+            <span className="text-slate-400 capitalize">
+              {key.replace("_", " ")}:
+            </span>
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-white select-all">
+                {value}
+              </span>
+              <button
+                type="button"
+                onClick={() => navigator.clipboard.writeText(value)}
+                className="p-1.5 bg-slate-800 hover:bg-cyan-500/20 text-slate-400 hover:text-cyan-300 rounded-md transition-colors"
+                title="Copiar"
+              >
+                <Copy size={14} />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* --- FIN: DATOS DE TRANSFERENCIA AÑADIDOS --- */}
+
       <GlowingButton onClick={onReset}>Volver al Inicio</GlowingButton>
     </div>
   );
@@ -1887,7 +1927,12 @@ function AboutSection() {
                 personalización más avanzada.
               </p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
+            {/* Cambio solicitado: Se eliminó 'sm:grid-cols-2' para que las 
+              tarjetas de ubicación y horario estén siempre apiladas 
+              verticalmente (Ubicación arriba, Horario abajo) 
+              en todas las pantallas.
+            */}
+            <div className="grid grid-cols-1 gap-4 mt-8">
               <div className="p-6 rounded-2xl bg-slate-900/50 border border-white/10 flex items-start gap-4">
                 <div className="p-3 bg-cyan-500/10 rounded-lg text-cyan-400">
                   <MapPin size={24} />
@@ -1955,13 +2000,17 @@ function Footer() {
             </p>
             <div className="flex gap-4">
               <a
-                href="#"
+                href="https://www.instagram.com/appneosushi"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="p-2 bg-white/5 rounded-full text-slate-400 hover:text-cyan-400 transition-all"
               >
                 <Instagram size={20} />
               </a>
               <a
-                href="#"
+                href="https://www.facebook.com/neosushiapp"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="p-2 bg-white/5 rounded-full text-slate-400 hover:text-blue-400 transition-all"
               >
                 <Facebook size={20} />
@@ -2231,6 +2280,7 @@ function App() {
     // --- DATOS DEL CLIENTE ---
     msg += `*DATOS DEL CLIENTE*\n`;
     msg += `*Nombre:* ${formData.fullName}\n`;
+    // Línea de RUT eliminada
     msg += `*Teléfono:* +56${formData.phone}\n`;
     msg += `${separador}\n\n`;
 
@@ -2460,13 +2510,17 @@ function App() {
 
           <div className="flex items-center gap-3">
             <a
-              href="#"
+              href="https://www.instagram.com/appneosushi"
+              target="_blank"
+              rel="noopener noreferrer"
               className="p-2 text-slate-400 hover:text-white transition-colors hidden sm:block"
             >
               <Instagram size={20} />
             </a>
             <a
-              href="#"
+              href="https://www.facebook.com/neosushiapp"
+              target="_blank"
+              rel="noopener noreferrer"
               className="p-2 text-slate-400 hover:text-white transition-colors hidden sm:block"
             >
               <Facebook size={20} />
@@ -2601,13 +2655,17 @@ function App() {
             </a>
             <div className="flex gap-6 mt-8">
               <a
-                href="#"
+                href="https://www.instagram.com/appneosushi"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="p-4 bg-white/5 rounded-full text-slate-400 hover:text-cyan-400"
               >
                 <Instagram size={32} />
               </a>
               <a
-                href="#"
+                href="https://www.facebook.com/neosushiapp"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="p-4 bg-white/5 rounded-full text-slate-400 hover:text-blue-400"
               >
                 <Facebook size={32} />
