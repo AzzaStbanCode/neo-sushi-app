@@ -92,51 +92,6 @@ const WRAPPERS = {
 };
 
 // --- DATOS DE MENÚ ---
-const STATIC_PROMOS = [
-  {
-    id: "s1",
-    name: "Pack Intro (20p)",
-    description: "10 California (Sésamo), 10 Frito (Pollo, Queso).",
-    basePrice: 10990, // Precio fijo
-    type: "STATIC",
-    image: "https://images.unsplash.com/photo-1617196019474-271a6f25f8da?auto=format&fit=crop&w=800&q=80",
-    rolls: [
-      {
-        id: "s1_r1",
-        name: "California Roll",
-        pieces: 10,
-        wrapper: "sesamo",
-        defaultFillings: ["kanikama", "palta_relleno", "queso"],
-      },
-      {
-        id: "s1_r2",
-        name: "Frito Roll",
-        pieces: 10,
-        wrapper: "frito",
-        defaultFillings: ["pollo", "queso", "cebollin"],
-      },
-    ],
-  },
-  {
-    id: "s2",
-    name: "Salmon Lover (10p)",
-    description: "10 Rolls envueltos en Salmón con palta y queso.",
-    basePrice: 8990,
-    type: "STATIC",
-    image: "https://images.unsplash.com/photo-1583623025817-d180a2221d0a?auto=format&fit=crop&w=800&q=80",
-    rolls: [
-      {
-        id: "s2_r1",
-        name: "Salmon Roll",
-        pieces: 10,
-        wrapper: "salmon",
-        defaultFillings: ["palta_relleno", "queso", "ciboulette_relleno"],
-      },
-    ],
-  },
-];
-
-
 const MODIFIABLE_PROMOS = [
   {
     id: "promo1",
@@ -225,6 +180,50 @@ const MODIFIABLE_PROMOS = [
         pieces: 10,
         wrapper: "sesamo",
         defaultFillings: ["palta_relleno", "queso", "kanikama"],
+      },
+    ],
+  },
+];
+
+const STATIC_PROMOS = [
+  {
+    id: "s1",
+    name: "Pack Intro (20p)",
+    description: "10 California (Sésamo), 10 Frito (Pollo, Queso).",
+    basePrice: 10990, // Precio fijo
+    type: "STATIC",
+    image: "https://images.unsplash.com/photo-1617196019474-271a6f25f8da?auto=format&fit=crop&w=800&q=80",
+    rolls: [
+      {
+        id: "s1_r1",
+        name: "California Roll",
+        pieces: 10,
+        wrapper: "sesamo",
+        defaultFillings: ["kanikama", "palta_relleno", "queso"],
+      },
+      {
+        id: "s1_r2",
+        name: "Frito Roll",
+        pieces: 10,
+        wrapper: "frito",
+        defaultFillings: ["pollo", "queso", "cebollin"],
+      },
+    ],
+  },
+  {
+    id: "s2",
+    name: "Salmon Lover (10p)",
+    description: "10 Rolls envueltos en Salmón con palta y queso.",
+    basePrice: 8990,
+    type: "STATIC",
+    image: "https://images.unsplash.com/photo-1583623025817-d180a2221d0a?auto=format&fit=crop&w=800&q=80",
+    rolls: [
+      {
+        id: "s2_r1",
+        name: "Salmon Roll",
+        pieces: 10,
+        wrapper: "salmon",
+        defaultFillings: ["palta_relleno", "queso", "ciboulette_relleno"],
       },
     ],
   },
@@ -1710,12 +1709,11 @@ function App() {
   };
 
   const generateWhatsAppMessage = (formData) => {
-    // --- INICIO: CÁLCULO DE DESPACHO PARA WHATSAPP ---
+    // --- CÁLCULO DE DESPACHO ---
     let deliveryFee = 0;
     if (formData.deliveryType === "delivery") {
       const commune = formData.commune.trim().toLowerCase();
       if (commune.length > 0) {
-        // Asumimos que si se envió, la comuna es válida
         if (commune === LOCAL_COMMUNE.toLowerCase()) {
           deliveryFee = 2000;
         } else {
@@ -1724,21 +1722,41 @@ function App() {
       }
     }
     const finalTotal = cartTotal + deliveryFee;
-    // --- FIN: CÁLCULO DE DESPACHO ---
+    const separador = "--------------------------------";
 
-    let msg = `*NUEVO PEDIDO WEB - NEO SUSHI*\n--------------------------------\n*Cliente:* ${
-      formData.fullName
-    }\n*Teléfono:* ${formData.phone}\n*Entrega:* ${
-      formData.deliveryType === "delivery"
-        ? "🛵 DELIVERY"
-        : "🏪 RETIRO EN LOCAL"
-    }\n`;
-    if (formData.deliveryType === "delivery")
-      msg += `*Dir:* ${formData.address}, ${formData.commune}\n*Ref:* ${
-        formData.reference || "-"
-      }\n`;
-    else msg += `*Fecha Retiro:* ${getTodayDateStr()}\n`;
-    msg += `--------------------------------\n*DETALLE:*\n`;
+    // --- INFO DE FECHA Y HORA ---
+    const now = new Date();
+    const fecha = now.toLocaleDateString("es-CL", { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const hora = now.toLocaleTimeString("es-CL", { hour: '2-digit', minute: '2-digit', hour12: true });
+
+    // --- INICIO DEL MENSAJE ---
+    let msg = `*¡NUEVO PEDIDO WEB! - NEO SUSHI* 🍣\n`;
+    msg += `${separador}\n`;
+    msg += `*Fecha:* ${fecha}\n`;
+    msg += `*Hora:* ${hora}\n`;
+    msg += `${separador}\n\n`;
+
+    // --- DATOS DEL CLIENTE ---
+    msg += `*DATOS DEL CLIENTE*\n`;
+    msg += `*Nombre:* ${formData.fullName}\n`;
+    msg += `*Teléfono:* +56${formData.phone}\n`;
+    msg += `${separador}\n\n`;
+
+    // --- TIPO DE ENTREGA ---
+    msg += `*TIPO DE ENTREGA*\n`;
+    if (formData.deliveryType === "delivery") {
+      msg += `*Tipo:* 🛵 Delivery a Domicilio\n`;
+      msg += `*Dirección:* ${formData.address}\n`;
+      msg += `*Comuna:* ${formData.commune}\n`;
+      msg += `*Referencia:* ${formData.reference || "Ninguna"}\n`;
+    } else {
+      msg += `*Tipo:* 🏪 Retiro en Local\n`;
+      msg += `*Fecha Retiro:* ${getTodayDateStr()}\n`;
+    }
+    msg += `${separador}\n\n`;
+
+    // --- DETALLE DEL PEDIDO ---
+    msg += `*DETALLE DEL PEDIDO*\n`;
     cartItems.forEach((item, i) => {
       msg += `\n*[${i + 1}] ${item.name.toUpperCase()}* (${formatPrice(
         item.totalPrice
@@ -1763,21 +1781,31 @@ function App() {
         msg += `   ➤ ${item.description}\n`;
       }
     });
+    msg += `\n${separador}\n\n`;
 
-    // --- INICIO: TOTALES ACTUALIZADOS EN WHATSAPP ---
-    msg += `\n--------------------------------\n`;
+    // --- RESUMEN DE PAGO ---
+    msg += `*RESUMEN DE PAGO*\n`;
+    msg += `*Subtotal:* ${formatPrice(cartTotal)}\n`;
     if (deliveryFee > 0) {
-      msg += `*Subtotal:* ${formatPrice(cartTotal)}\n`;
-      msg += `*Despacho:* ${formatPrice(deliveryFee)}\n`;
-      msg += `*TOTAL (Inc. Despacho): ${formatPrice(finalTotal)}*\n`;
-    } else {
-      msg += `*TOTAL: ${formatPrice(finalTotal)}*\n`;
+      msg += `*Envío:* ${formatPrice(deliveryFee)}\n`;
     }
-    msg += `*Pago:* ${
-      formData.paymentMethod === "transfer"
-        ? "💳 TRANSFERENCIA"
-        : `💵 EFECTIVO (Paga con: $${formData.cashAmount})`
-    }`;
+    msg += `\n*TOTAL A PAGAR: ${formatPrice(finalTotal)}*\n`;
+    msg += `${separador}\n\n`;
+
+    // --- MÉTODO DE PAGO ---
+    msg += `*MÉTODO DE PAGO*\n`;
+    if (formData.paymentMethod === "transfer") {
+      msg += `*Tipo:* 💳 Transferencia Bancaria\n`;
+      msg += `_(Por favor, enviar comprobante a este chat)_\n`;
+    } else {
+      const pagaCon = parseInt(formData.cashAmount, 10);
+      msg += `*Tipo:* 💵 Efectivo\n`;
+      msg += `*Paga con:* ${formatPrice(pagaCon)}\n`;
+      // --- LÍNEA DE VUELTO ELIMINADA ---
+    }
+    msg += `${separador}\n\n`;
+    msg += `¡Gracias por preferir NEO SUSHI!`;
+
     return encodeURIComponent(msg);
   };
 
@@ -1826,10 +1854,12 @@ function App() {
             <div className="w-8 h-8 bg-gradient-to-br from-cyan-500 to-fuchsia-600 rounded-lg rotate-45 flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.5)]">
               <span className="-rotate-45 font-bold text-white text-xl">N</span>
             </div>
+            {/* --- CAMBIO 2: LOGO EN MÓVIL --- */}
             <h1 className="text-xl font-black tracking-wider text-white">
-              <span className="hidden sm:inline">NEO</span>
+              <span>NEO</span>
               <span className="text-cyan-400">SUSHI</span>
             </h1>
+            {/* --- FIN CAMBIO 2 --- */}
           </div>
 
           <div className="hidden md:flex items-center gap-6 text-sm font-medium">
@@ -1862,26 +1892,26 @@ function App() {
               {isMenuDropdownOpen && (
                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-64 bg-[#0c0c1d] border border-white/10 rounded-xl shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-200">
                   <a
-                    href="#menu-modificables"
+                    href="#menu-estaticas" // Actualizado para el nuevo orden
                     onClick={(e) => {
                       e.preventDefault();
                       setView("MENU");
-                      scrollTo("menu-modificables");
-                    }}
-                    className="block px-4 py-2 rounded-lg text-sm text-slate-300 hover:bg-cyan-500/20 hover:text-cyan-300"
-                  >
-                    Promos Modificables
-                  </a>
-                  <a
-                    href="#menu-estaticas"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setView("MENU");
-                      scrollTo("menu-estaticas");
+                      scrollTo("menu-estaticas"); // Actualizado para el nuevo orden
                     }}
                     className="block px-4 py-2 rounded-lg text-sm text-slate-300 hover:bg-cyan-500/20 hover:text-cyan-300"
                   >
                     Promos Estáticas
+                  </a>
+                  <a
+                    href="#menu-modificables" // Actualizado para el nuevo orden
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setView("MENU");
+                      scrollTo("menu-modificables"); // Actualizado para el nuevo orden
+                    }}
+                    className="block px-4 py-2 rounded-lg text-sm text-slate-300 hover:bg-cyan-500/20 hover:text-cyan-300"
+                  >
+                    Promos Modificables
                   </a>
                   <a
                     href="#neolab"
@@ -1994,26 +2024,26 @@ function App() {
             {/* Reemplazamos el 'Menú' simple por las 4 categorías */}
             <div className="flex flex-col items-center gap-8">
               <a
-                href="#menu-modificables"
+                href="#menu-estaticas" // Actualizado para el nuevo orden
                 onClick={(e) => {
                   e.preventDefault();
                   setView("MENU");
-                  scrollTo("menu-modificables");
-                }}
-                className="text-2xl font-bold text-white hover:text-cyan-400"
-              >
-                Promos Modificables
-              </a>
-              <a
-                href="#menu-estaticas"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setView("MENU");
-                  scrollTo("menu-estaticas");
+                  scrollTo("menu-estaticas"); // Actualizado para el nuevo orden
                 }}
                 className="text-2xl font-bold text-white hover:text-cyan-400"
               >
                 Promos Estáticas
+              </a>
+              <a
+                href="#menu-modificables" // Actualizado para el nuevo orden
+                onClick={(e) => {
+                  e.preventDefault();
+                  setView("MENU");
+                  scrollTo("menu-modificables"); // Actualizado para el nuevo orden
+                }}
+                className="text-2xl font-bold text-white hover:text-cyan-400"
+              >
+                Promos Modificables
               </a>
               <a
                 href="#neolab"
@@ -2075,70 +2105,8 @@ function App() {
           <main className="animate-in fade-in">
             <HeroSection />
 
+            {/* --- CAMBIO 1: ORDEN DE SECCIONES --- */}
             <section id="menu" className="container mx-auto px-4 sm:px-6 py-20">
-              <h2
-                id="menu-modificables"
-                className="text-3xl font-black text-white mb-4 border-l-4 border-cyan-500 pl-4"
-              >
-                Promociones Modificables
-              </h2>
-              <p className="text-slate-400 text-sm mb-8 max-w-2xl pl-5">
-                Aquí puedes cambiar los ingredientes de cada roll. (Cualquier
-                cambio tiene un costo extra).
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-16">
-                {MODIFIABLE_PROMOS.map((promo) => (
-                  <div
-                    key={promo.id}
-                    className="bg-slate-900/40 border border-white/5 rounded-3xl overflow-hidden hover:border-cyan-500/50 transition-all flex flex-col group"
-                  >
-                    <div className="h-48 overflow-hidden relative group-hover:scale-105 transition-transform duration-500">
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a1a] to-transparent z-10" />
-                      <img
-                        src={promo.image}
-                        alt={promo.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src =
-                            "https://placehold.co/800x400/1e293b/94a3b8?text=Sin+Imagen";
-                        }}
-                      />
-                      <div className="absolute bottom-0 left-0 p-4 z-20">
-                        <span className="px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-xs font-bold backdrop-blur-md">
-                          {promo.rolls.reduce((acc, r) => acc + r.pieces, 0)}{" "}
-                          Piezas
-                        </span>
-                      </div>
-                    </div>
-                    <div className="p-5 flex flex-col grow">
-                      <h4 className="text-xl font-bold text-white mb-2">
-                        {promo.name}
-                      </h4>
-                      <p className="text-slate-400 text-sm mb-4 grow">
-                        {promo.description}
-                      </p>
-                      <div className="flex justify-between items-end">
-                        <div>
-                          <p className="text-xs text-slate-500 uppercase">
-                            Base
-                          </p>
-                          <p className="text-2xl font-bold text-white">
-                            {formatPrice(promo.basePrice)}
-                          </p>
-                        </div>
-                        <GlowingButton
-                          variant="ghost"
-                          onClick={() => setSelectedPromo(promo)}
-                        >
-                          Configurar <ChevronRight size={18} />
-                        </GlowingButton>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
               <h2
                 id="menu-estaticas"
                 className="text-3xl font-black text-white mb-4 border-l-4 border-fuchsia-500 pl-4"
@@ -2201,6 +2169,70 @@ function App() {
                   </div>
                 ))}
               </div>
+
+              <h2
+                id="menu-modificables"
+                className="text-3xl font-black text-white mb-4 border-l-4 border-cyan-500 pl-4"
+              >
+                Promociones Modificables
+              </h2>
+              <p className="text-slate-400 text-sm mb-8 max-w-2xl pl-5">
+                Aquí puedes cambiar los ingredientes de cada roll. (Cualquier
+                cambio tiene un costo extra).
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-16">
+                {MODIFIABLE_PROMOS.map((promo) => (
+                  <div
+                    key={promo.id}
+                    className="bg-slate-900/40 border border-white/5 rounded-3xl overflow-hidden hover:border-cyan-500/50 transition-all flex flex-col group"
+                  >
+                    <div className="h-48 overflow-hidden relative group-hover:scale-105 transition-transform duration-500">
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a1a] to-transparent z-10" />
+                      <img
+                        src={promo.image}
+                        alt={promo.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src =
+                            "https://placehold.co/800x400/1e293b/94a3b8?text=Sin+Imagen";
+                        }}
+                      />
+                      <div className="absolute bottom-0 left-0 p-4 z-20">
+                        <span className="px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-xs font-bold backdrop-blur-md">
+                          {promo.rolls.reduce((acc, r) => acc + r.pieces, 0)}{" "}
+                          Piezas
+                        </span>
+                      </div>
+                    </div>
+                    <div className="p-5 flex flex-col grow">
+                      <h4 className="text-xl font-bold text-white mb-2">
+                        {promo.name}
+                      </h4>
+                      <p className="text-slate-400 text-sm mb-4 grow">
+                        {promo.description}
+                      </p>
+                      <div className="flex justify-between items-end">
+                        <div>
+                          <p className="text-xs text-slate-500 uppercase">
+                            Base
+                          </p>
+                          <p className="text-2xl font-bold text-white">
+                            {formatPrice(promo.basePrice)}
+                          </p>
+                        </div>
+                        <GlowingButton
+                          variant="ghost"
+                          onClick={() => setSelectedPromo(promo)}
+                        >
+                          Configurar <ChevronRight size={18} />
+                        </GlowingButton>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* --- FIN CAMBIO 1 --- */}
 
               <h2 className="text-3xl font-black text-white mb-4 border-l-4 border-cyan-500 pl-4">
                 Crea tu Roll (Neo-Lab)
