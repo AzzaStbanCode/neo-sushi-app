@@ -82,6 +82,20 @@ const FILLINGS = [
   { id: "camaron", name: "Camarón Tempura", tier: "SPECIAL", price: 1500 },
 ];
 
+// --- INICIO: DATOS VEGETARIANOS ---
+const VEGETARIAN_FILLING_IDS = [
+  "cebollin",
+  "pepino",
+  "ciboulette_relleno",
+  "palta_relleno",
+  "queso",
+  "champinon",
+];
+const VEGETARIAN_FILLINGS_DATA = FILLINGS.filter((f) =>
+  VEGETARIAN_FILLING_IDS.includes(f.id)
+);
+// --- FIN: DATOS VEGETARIANOS ---
+
 const WRAPPERS = {
   sesamo: { name: "Envuelto en Sésamo", price: 0 },
   ciboulette: { name: "Envuelto en Ciboulette", price: 0 },
@@ -90,6 +104,16 @@ const WRAPPERS = {
   queso: { name: "Envuelto en Queso Crema", price: 1000 },
   salmon: { name: "Envuelto en Salmón", price: 2000 },
 };
+
+// --- INICIO: NUEVOS DATOS VEGETARIANOS (ENVOLTURAS) ---
+const VEGETARIAN_WRAPPERS = {
+  sesamo: { name: "Envuelto en Sésamo", price: 0 },
+  ciboulette: { name: "Envuelto en Ciboulette", price: 0 },
+  frito: { name: "Frito en Panko", price: 500 },
+  palta: { name: "Envuelto en Palta", price: 1000 },
+  queso: { name: "Envuelto en Queso Crema", price: 1000 },
+};
+// --- FIN: NUEVOS DATOS VEGETARIANOS (ENVOLTURAS) ---
 
 // --- DATOS DE MENÚ ---
 const MODIFIABLE_PROMOS = [
@@ -484,6 +508,59 @@ function IngredientSelector({
   );
 }
 
+// --- INICIO: NUEVO SELECTOR VEGETARIANO ---
+function VeggieIngredientSelector({ currentFillingId, onSelect, onClose }) {
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md flex flex-col shadow-2xl">
+        <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950/50">
+          <h3
+            className={`text-lg font-bold flex items-center gap-2 text-green-400`}
+          >
+            <Layers className="w-5 h-5" /> Elegir Relleno Vegetariano
+          </h3>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-white/10 rounded-full text-slate-400"
+          >
+            <X size={20} />
+          </button>
+        </div>
+        <div className="p-3 bg-green-500/10 border-b border-green-500/20 text-green-200 text-xs flex items-start gap-2">
+          <Info size={14} className="shrink-0 mt-0.5" />
+          <p>
+            El precio base del roll es de ${4990}. Cada ingrediente que elijas
+            sumará su precio de lista al total.
+          </p>
+        </div>
+        <div className="p-4 grid grid-cols-1 gap-2 max-h-[60vh] overflow-y-auto custom-scrollbar">
+          {VEGETARIAN_FILLINGS_DATA.map((ing) => {
+            const isSelected = ing.id === currentFillingId;
+            let displayPrice = `+$${ing.price}`;
+            return (
+              <button
+                key={ing.id}
+                onClick={() => onSelect(ing.id)}
+                className={`p-3 text-sm text-left rounded-lg border transition-all flex justify-between ${
+                  isSelected
+                    ? `bg-green-900/30 border-green-500 text-white`
+                    : "border-slate-700 bg-slate-800/50 text-slate-300 hover:bg-slate-700"
+                }`}
+              >
+                <span>{ing.name}</span>
+                <span className={`text-xs opacity-70 text-cyan-300`}>
+                  {displayPrice}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+// --- FIN: NUEVO SELECTOR VEGETARIANO ---
+
 // Modal de Promo con guías
 function PromoBuilderModal({
   promo,
@@ -755,25 +832,30 @@ function CustomRollBuilder({ onClose, onAddToCart }) {
         </div>
         <div className="p-6 overflow-y-auto grow custom-scrollbar">
           {step === 1 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {Object.entries(WRAPPERS).map(([key, wrapper]) => (
-                <button
-                  key={key}
-                  onClick={() => {
-                    setSelectedWrapper(key);
-                    setStep(2);
-                  }}
-                  className="p-4 rounded-xl border border-white/10 bg-white/5 hover:bg-fuchsia-500/20 hover:border-fuchsia-500 transition-all text-left"
-                >
-                  <span className="font-bold text-white block mb-1">
-                    {wrapper.name}
-                  </span>
-                  <span className="text-fuchsia-300 text-sm">
-                    {wrapper.price === 0 ? "Incluido" : `+$${wrapper.price}`}
-                  </span>
-                </button>
-              ))}
-            </div>
+            <>
+              <h3 className="text-lg font-bold text-white mb-4">
+                Paso 1: Elige tu Envoltura
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {Object.entries(WRAPPERS).map(([key, wrapper]) => (
+                  <button
+                    key={key}
+                    onClick={() => {
+                      setSelectedWrapper(key);
+                      setStep(2);
+                    }}
+                    className="p-4 rounded-xl border border-white/10 bg-white/5 hover:bg-fuchsia-500/20 hover:border-fuchsia-500 transition-all text-left"
+                  >
+                    <span className="font-bold text-white block mb-1">
+                      {wrapper.name}
+                    </span>
+                    <span className="text-fuchsia-300 text-sm">
+                      {wrapper.price === 0 ? "Incluido" : `+$${wrapper.price}`}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </>
           ) : (
             <div className="space-y-6">
               <div className="flex justify-between items-center p-4 bg-slate-900 rounded-xl border border-white/10">
@@ -789,7 +871,7 @@ function CustomRollBuilder({ onClose, onAddToCart }) {
                 </button>
               </div>
               <h3 className="text-lg font-bold text-white mb-2">
-                Configura tus 3 Rellenos:
+                Paso 2: Configura tus 3 Rellenos
               </h3>
               <div className="p-3 -mt-2 rounded-xl bg-fuchsia-500/10 border border-fuchsia-500/20 text-fuchsia-200 text-sm flex items-start gap-3">
                 <Info size={18} className="shrink-0 mt-0.5" />
@@ -870,6 +952,170 @@ function CustomRollBuilder({ onClose, onAddToCart }) {
   );
 }
 
+// --- INICIO: NUEVO CONSTRUCTOR VEGETARIANO ---
+function VeggieRollBuilder({ onClose, onAddToCart }) {
+  const [step, setStep] = useState(1);
+  const [selectedWrapper, setSelectedWrapper] = useState(null);
+  const [fillings, setFillings] = useState([null, null, null]); // 3 slots
+  const [activeSlot, setActiveSlot] = useState(null); // 0, 1, or 2
+  const baseRollPrice = 4990; // Mismo precio base que el custom
+
+  // Lógica de precio: Base + Envoltura + 3 Rellenos
+  const currentTotal = useMemo(() => {
+    let total = baseRollPrice;
+    if (selectedWrapper) total += WRAPPERS[selectedWrapper].price;
+    fillings.forEach((fId) => {
+      if (fId) total += getFillingById(fId).price;
+    });
+    return total;
+  }, [selectedWrapper, fillings]);
+
+  const isReadyToAdd = selectedWrapper && fillings.every((f) => f !== null);
+
+  const handleVeggieFillingSelect = (id) => {
+    const newFillings = [...fillings];
+    newFillings[activeSlot] = id;
+    setFillings(newFillings);
+    setActiveSlot(null);
+  };
+
+  const slotLabels = ["Primer Relleno", "Segundo Relleno", "Tercer Relleno"];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center sm:p-4">
+      <div
+        className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm"
+        onClick={onClose}
+      ></div>
+      <div className="relative w-full max-w-2xl bg-[#0c0c1d] sm:border border-white/10 sm:rounded-3xl shadow-[0_0_50px_rgba(6,182,212,0.3)] overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-300 max-h-[90vh]">
+        <div className="p-6 bg-slate-900/90 border-b border-white/5 flex justify-between">
+          <h2 className="text-2xl font-black text-cyan-400 flex items-center gap-2">
+            <Eye /> Roll Vegetariano (10p)
+          </h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-white">
+            <X />
+          </button>
+        </div>
+        <div className="p-6 overflow-y-auto grow custom-scrollbar">
+          {step === 1 ? (
+            <>
+              <h3 className="text-lg font-bold text-white mb-4">
+                Paso 1: Elige tu Envoltura
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {Object.entries(VEGETARIAN_WRAPPERS).map(([key, wrapper]) => (
+                  <button
+                    key={key}
+                    onClick={() => {
+                      setSelectedWrapper(key);
+                      setStep(2);
+                    }}
+                    className="p-4 rounded-xl border border-white/10 bg-white/5 hover:bg-cyan-500/20 hover:border-cyan-500 transition-all text-left"
+                  >
+                    <span className="font-bold text-white block mb-1">
+                      {wrapper.name}
+                    </span>
+                    <span className="text-cyan-300 text-sm">
+                      {wrapper.price === 0 ? "Incluido" : `+$${wrapper.price}`}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center p-4 bg-slate-900 rounded-xl border border-white/10">
+                <span className="text-slate-400">Envoltura:</span>
+                <span className="font-bold text-cyan-300">
+                  {WRAPPERS[selectedWrapper].name}
+                </span>
+                <button
+                  onClick={() => setStep(1)}
+                  className="text-xs underline text-slate-500 hover:text-white"
+                >
+                  Cambiar
+                </button>
+              </div>
+              <h3 className="text-lg font-bold text-white mb-2">
+                Paso 2: Elige 3 Rellenos Veggie
+              </h3>
+              <div className="p-3 -mt-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-200 text-sm flex items-start gap-3">
+                <Info size={18} className="shrink-0 mt-0.5" />
+                <p>
+                  Selecciona 3 ingredientes de nuestra lista vegetariana. Puedes
+                  repetir ingredientes si lo deseas.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {slotLabels.map((label, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setActiveSlot(idx)}
+                    className={`p-4 rounded-xl border transition-all text-left relative min-h-[100px] flex flex-col justify-center ${
+                      fillings[idx]
+                        ? `border-cyan-500/50 bg-cyan-500/10`
+                        : "border-dashed border-slate-700 hover:border-white/30 bg-slate-900/50"
+                    }`}
+                  >
+                    <div
+                      className={`text-[10px] uppercase mb-2 font-bold text-cyan-400`}
+                    >
+                      {label}
+                    </div>
+                    {fillings[idx] ? (
+                      <div className="font-medium text-slate-200">
+                        {getFillingById(fillings[idx]).name}
+                      </div>
+                    ) : (
+                      <span className="text-slate-500 italic">Elegir...</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="p-6 bg-slate-900/90 border-t border-white/5 shrink-0 flex justify-between items-center">
+          <div>
+            <div className="text-slate-400 text-xs">Total Roll Veggie</div>
+            <div className="text-3xl font-bold text-white">
+              {formatPrice(currentTotal)}
+            </div>
+          </div>
+          {step === 2 && (
+            <GlowingButton
+              variant="primary" // Botón primario (cyan)
+              disabled={!isReadyToAdd}
+              onClick={() =>
+                onAddToCart({
+                  type: "VEGGIE", // Nuevo tipo
+                  name: "Roll Veggie Custom", // Nuevo nombre
+                  pieces: 10,
+                  wrapperKey: selectedWrapper,
+                  fillings,
+                  totalPrice: currentTotal,
+                  uuid: Date.now(),
+                })
+              }
+            >
+              Terminar Roll Veggie
+            </GlowingButton>
+          )}
+        </div>
+      </div>
+      {/* Llama al nuevo selector vegetariano */}
+      {activeSlot !== null && (
+        <VeggieIngredientSelector
+          currentFillingId={fillings[activeSlot]}
+          onSelect={handleVeggieFillingSelect}
+          onClose={() => setActiveSlot(null)}
+        />
+      )}
+    </div>
+  );
+}
+// --- FIN: NUEVO CONSTRUCTOR VEGETARIANO ---
+
 // --- COMPONENTE CORREGIDO ---
 function CartDrawer({
   isOpen,
@@ -938,13 +1184,17 @@ function CartDrawer({
                   <div>
                     <h3 className="font-bold text-cyan-300">{item.name}</h3>
                     <p className="text-xs text-slate-400">
+                      {/* --- INICIO: LÓGICA DE TIPO ACTUALIZADA --- */}
                       {item.type === "PROMO"
-                        ? "Pack Promocional"
+                        ? "Promo Modificable"
                         : item.type === "CUSTOM"
                         ? "Roll Personalizado"
                         : item.type === "STATIC"
                         ? "Promo Estática"
+                        : item.type === "VEGGIE"
+                        ? "Roll Vegetariano" // <-- NUEVA LÍNEA
                         : "Extra"}
+                      {/* --- FIN: LÓGICA DE TIPO ACTUALIZADA --- */}
                     </p>
                   </div>
                   {/* Se añadió pr-10 para dar espacio al botón de eliminar */}
@@ -979,8 +1229,8 @@ function CartDrawer({
                       </div>
                     ))}
                   </div>
-                ) : item.type === "CUSTOM" ? (
-                  // Lógica específica para Roll Custom (Neo-Lab)
+                ) : item.type === "CUSTOM" || item.type === "VEGGIE" ? ( // <-- LÓGICA ACTUALIZADA
+                  // Lógica específica para Roll Custom (Neo-Lab) y Veggie
                   <div className="p-4 space-y-3 text-sm border-t border-white/5">
                     <div className="pl-3 border-l-2 border-slate-700">
                       <div className="text-slate-200 font-medium">
@@ -1101,6 +1351,9 @@ function CheckoutView({ cartItems, total, onBack, onCompleteOrder }) {
 
   // Nuevo estado para el modal de error
   const [showClosedError, setShowClosedError] = useState(false);
+  // --- INICIO: NUEVO ESTADO PARA TABS DE PAGO ---
+  const [paymentTab, setPaymentTab] = useState("transfer"); // 'transfer' o 'mercadopago'
+  // --- FIN: NUEVO ESTADO ---
 
   // --- NUEVA LÓGICA DE CÁLCULO DE DESPACHO ---
   const { deliveryFee, finalTotal } = useMemo(() => {
@@ -1124,7 +1377,17 @@ function CheckoutView({ cartItems, total, onBack, onCompleteOrder }) {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     if (name === "phone" && !/^\d*$/.test(value)) return;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // --- INICIO: CAMBIO 2 (LÓGICA) ---
+    if (name === "cashAmount") {
+      // 1. Quitar puntos y caracteres no numéricos
+      const rawValue = value.replace(/\D/g, "");
+      // 2. Actualizar el estado solo con los números
+      setFormData((prev) => ({ ...prev, [name]: rawValue }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+    // --- FIN: CAMBIO 2 (LÓGICA) ---
   };
   const isFormValid = useMemo(() => {
     if (!formData.fullName || formData.phone.length < 8) return false;
@@ -1300,7 +1563,7 @@ function CheckoutView({ cartItems, total, onBack, onCompleteOrder }) {
             <h3 className="text-xl font-bold text-cyan-400 mb-4">
               3. Forma de Pago
             </h3>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <button
                 type="button"
                 onClick={() =>
@@ -1312,7 +1575,7 @@ function CheckoutView({ cartItems, total, onBack, onCompleteOrder }) {
                     : "bg-slate-900/50 border-slate-700 text-slate-400 hover:bg-slate-800"
                 }`}
               >
-                <Banknote /> Transferencia
+                <Banknote /> Transferencia / MP
               </button>
               <button
                 type="button"
@@ -1327,47 +1590,115 @@ function CheckoutView({ cartItems, total, onBack, onCompleteOrder }) {
               >
                 <Banknote /> Efectivo
               </button>
+              {/* --- INICIO: NUEVO BOTÓN DE PAGO --- */}
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, paymentMethod: "pos" })}
+                className={`p-4 rounded-xl border flex flex-col items-center gap-2 transition-all ${
+                  formData.paymentMethod === "pos"
+                    ? "bg-fuchsia-500/20 border-fuchsia-500 text-white"
+                    : "bg-slate-900/50 border-slate-700 text-slate-400 hover:bg-slate-800"
+                }`}
+              >
+                <CreditCard /> Débito / Crédito
+              </button>
+              {/* --- FIN: NUEVO BOTÓN DE PAGO --- */}
             </div>
             {formData.paymentMethod === "transfer" ? (
-              <div className="bg-slate-900/80 border border-slate-700 rounded-xl p-4 space-y-3 text-sm animate-in slide-in-from-top-2">
-                <p className="text-slate-400 text-xs mb-2">
-                  Copia los datos para transferir:
-                </p>
-                {Object.entries(BANK_DETAILS).map(([key, value]) => (
-                  <div
-                    key={key}
-                    className="flex justify-between items-center py-2 border-b border-slate-800 last:border-0"
+              <div className="bg-slate-900/80 border border-slate-700 rounded-xl p-4 space-y-4 text-sm animate-in slide-in-from-top-2">
+                {/* --- INICIO: CONTROLADOR DE TABS --- */}
+                <div className="grid grid-cols-2 gap-2 p-1 bg-slate-950/50 rounded-lg">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentTab("transfer")}
+                    className={`py-2 px-3 rounded-md text-xs font-bold transition-all ${
+                      paymentTab === "transfer"
+                        ? "bg-fuchsia-500/50 text-white shadow"
+                        : "text-slate-400 hover:bg-slate-800"
+                    }`}
                   >
-                    <span className="text-slate-400 capitalize">
-                      {key.replace("_", " ")}:
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-white select-all">
-                        {value}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => navigator.clipboard.writeText(value)}
-                        className="p-1.5 bg-slate-800 hover:bg-cyan-500/20 text-slate-400 hover:text-cyan-300 rounded-md transition-colors"
-                        title="Copiar"
+                    Datos de Transferencia
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentTab("mercadopago")}
+                    className={`py-2 px-3 rounded-md text-xs font-bold transition-all ${
+                      paymentTab === "mercadopago"
+                        ? "bg-fuchsia-500/50 text-white shadow"
+                        : "text-slate-400 hover:bg-slate-800"
+                    }`}
+                  >
+                    Mercado Pago
+                  </button>
+                </div>
+                {/* --- FIN: CONTROLADOR DE TABS --- */}
+
+                {/* --- INICIO: CONTENIDO DE TABS --- */}
+                {paymentTab === "transfer" ? (
+                  <div className="animate-in fade-in duration-200 space-y-3">
+                    <p className="text-slate-400 text-xs mb-2">
+                      Copia los datos para transferir:
+                    </p>
+                    {Object.entries(BANK_DETAILS).map(([key, value]) => (
+                      <div
+                        key={key}
+                        className="flex justify-between items-center py-2 border-b border-slate-800 last:border-0"
                       >
-                        <Copy size={14} />
-                      </button>
+                        <span className="text-slate-400 capitalize">
+                          {key.replace("_", " ")}:
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-white select-all">
+                            {value}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => navigator.clipboard.writeText(value)}
+                            className="p-1.5 bg-slate-800 hover:bg-cyan-500/20 text-slate-400 hover:text-cyan-300 rounded-md transition-colors"
+                            title="Copiar"
+                          >
+                            <Copy size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    {/* 3. TEXTO DE INSTRUCCIÓN DE PAGO (CHECKOUT) ACTUALIZADO */}
+                    <div className="mt-2 pt-2 text-fuchsia-300 text-xs flex items-start gap-2">
+                      <Info size={16} className="shrink-0 mt-0.5" />
+                      <div>
+                        <strong>Importante:</strong> Al presionar "Confirmar y
+                        Enviar Pedido", se abrirá WhatsApp para que envíes tu
+                        orden.{" "}
+                        <strong>Después de enviar el pedido</strong>, realiza la
+                        transferencia y envía el comprobante al mismo chat.
+                      </div>
                     </div>
                   </div>
-                ))}
-                {/* 3. TEXTO DE INSTRUCCIÓN DE PAGO (CHECKOUT) ACTUALIZADO */}
-                <div className="mt-2 pt-2 text-fuchsia-300 text-xs flex items-start gap-2">
-                  <Info size={16} className="shrink-0 mt-0.5" />
-                  <div>
-                    <strong>Importante:</strong> Al presionar "Confirmar y Enviar
-                    Pedido", se abrirá WhatsApp para que envíes tu orden.{" "}
-                    <strong>Después de enviar el pedido</strong>, realiza la
-                    transferencia y envía el comprobante al mismo chat.
+                ) : (
+                  <div className="animate-in fade-in duration-200 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="text-cyan-400" size={20} />
+                      <h4 className="font-bold text-white">
+                        Pago con Mercado Pago
+                      </h4>
+                    </div>
+                    <p className="text-slate-400 text-xs">
+                      Al confirmar tu pedido, te contactaremos por WhatsApp para
+                      enviarte el link de pago de Mercado Pago.
+                    </p>
+                    <div className="mt-2 pt-2 text-fuchsia-300 text-xs flex items-start gap-2">
+                      <Info size={16} className="shrink-0 mt-0.5" />
+                      <div>
+                        <strong>Importante:</strong> Al presionar "Confirmar y
+                        Enviar Pedido", se abrirá WhatsApp para que envíes tu
+                        orden. Responderemos por ese medio con el link de pago.
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
+                {/* --- FIN: CONTENIDO DE TABS --- */}
               </div>
-            ) : (
+            ) : formData.paymentMethod === "cash" ? (
               <div className="animate-in slide-in-from-top-2">
                 <label className="block text-sm text-slate-400 mb-1">
                   ¿Con cuánto pagas? (Para calcular vuelto)
@@ -1376,18 +1707,46 @@ function CheckoutView({ cartItems, total, onBack, onCompleteOrder }) {
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">
                     $
                   </span>
+                  {/* --- INICIO: CAMBIO 2 (APARIENCIA) --- */}
                   <input
-                    type="number"
+                    type="text" // Cambiado de number
+                    inputMode="numeric" // Añadido
                     name="cashAmount"
-                    value={formData.cashAmount}
+                    // Formatear el valor para mostrarlo
+                    value={formData.cashAmount
+                      .toString()
+                      .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
                     onChange={handleInputChange}
                     required={formData.paymentMethod === "cash"}
                     className="w-full bg-slate-900/50 border border-slate-700 rounded-xl pl-8 pr-4 py-3 text-white focus:border-cyan-500"
-                    placeholder="Ej: 20000"
+                    placeholder="Ej: 20.000" // Actualizado placeholder
                   />
+                  {/* --- FIN: CAMBIO 2 (APARIENCIA) --- */}
                 </div>
               </div>
-            )}
+            ) : formData.paymentMethod === "pos" ? (
+              // --- INICIO: NUEVO BLOQUE PARA PAGO CON MÁQUINA ---
+              <div className="animate-in slide-in-from-top-2 bg-slate-900/80 border border-slate-700 rounded-xl p-4 space-y-3 text-sm">
+                <div className="flex items-center gap-2">
+                  <CreditCard className="text-cyan-400" size={20} />
+                  <h4 className="font-bold text-white">
+                    Pago con Débito / Crédito
+                  </h4>
+                </div>
+                <p className="text-slate-400 text-xs">
+                  Has seleccionado pagar con la máquina (POS).
+                </p>
+                <div className="mt-2 pt-2 text-fuchsia-300 text-xs flex items-start gap-2">
+                  <Info size={16} className="shrink-0 mt-0.5" />
+                  <div>
+                    <strong>Importante:</strong> Al confirmar el pedido, el
+                    repartidor llevará la máquina para que puedas pagar al
+                    momento de la entrega.
+                  </div>
+                </div>
+              </div>
+            ) : // --- FIN: NUEVO BLOQUE PARA PAGO CON MÁQUINA ---
+            null}
           </section>
         </form>
         {/* Resumen de Pedido */}
@@ -1404,11 +1763,15 @@ function CheckoutView({ cartItems, total, onBack, onCompleteOrder }) {
                 <div>
                   <p className="font-bold text-cyan-300">{item.name}</p>
                   <p className="text-slate-500 text-xs">
+                    {/* --- INICIO: LÓGICA DE TIPO ACTUALIZADA --- */}
                     {item.type === "PROMO"
                       ? "Pack"
                       : item.type === "CUSTOM"
                       ? "Custom Roll"
+                      : item.type === "VEGGIE"
+                      ? "Roll Vegetariano" // <-- NUEVA LÍNEA
                       : item.description}
+                    {/* --- FIN: LÓGICA DE TIPO ACTUALIZADA --- */}
                   </p>
                 </div>
                 <p className="font-medium text-slate-300">
@@ -1639,9 +2002,9 @@ function Footer() {
   );
 }
 
-function HeroSection() {
+function HeroSection({ scrollTo }) {
   return (
-    <header className="relative overflow-hidden px-6 text-center min-h-screen flex flex-col justify-center">
+    <header className="relative overflow-hidden px-6 text-center min-h-screen flex flex-col justify-center py-24">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[120px] -z-10"></div>
       <div className="absolute -top-40 -right-40 w-[500px] h-[500px] bg-fuchsia-500/10 rounded-full blur-[100px] -z-10"></div>
       <h1 className="text-5xl sm:text-7xl font-black mb-6 leading-tight text-white animate-in fade-in duration-500">
@@ -1650,22 +2013,97 @@ function HeroSection() {
           DISEÑADO POR TI.
         </span>
       </h1>
-      <p className="text-slate-400 max-w-xl mx-auto text-lg mb-10 animate-in fade-in duration-500 delay-100">
-        Explora nuestras promos modificables, packs estáticos o diseña un roll
-        desde cero en el Neo-Lab.
+      <p className="text-slate-400 max-w-xl mx-auto text-lg mb-12 animate-in fade-in duration-500 delay-100">
+        Explora nuestras promos, diseña un roll desde cero o crea tu propia
+        versión vegetariana.
       </p>
-      <div className="flex justify-center animate-in fade-in duration-500 delay-200">
-        <GlowingButton
-          variant="primary"
-          className="px-10 py-4 text-lg"
-          onClick={() =>
-            document
-              .getElementById("menu")
-              ?.scrollIntoView({ behavior: "smooth" })
-          }
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 max-w-6xl mx-auto w-full animate-in fade-in duration-500 delay-200">
+        {/* Card 1: Estáticas */}
+        <button
+          onClick={() => scrollTo("menu-estaticas")}
+          className="group relative p-5 rounded-2xl bg-slate-900/60 border border-white/10 hover:border-fuchsia-500/50 hover:bg-fuchsia-900/20 transition-all duration-300 flex items-center gap-4 text-left"
         >
-          Ver Menú <ArrowDown size={20} />
-        </GlowingButton>
+          <Eye size={28} className="text-fuchsia-400 shrink-0" />
+          <div>
+            <h3 className="font-bold text-white text-base">
+              Promos Estáticas
+            </h3>
+            <p className="text-slate-400 text-xs">
+              Packs listos para llevar.
+            </p>
+          </div>
+        </button>
+
+        {/* Card 2: Modificables */}
+        <button
+          onClick={() => scrollTo("menu-modificables")}
+          className="group relative p-5 rounded-2xl bg-slate-900/60 border border-white/10 hover:border-cyan-500/50 hover:bg-cyan-900/20 transition-all duration-300 flex items-center gap-4 text-left"
+        >
+          <Layers size={28} className="text-cyan-400 shrink-0" />
+          <div>
+            <h3 className="font-bold text-white text-base">
+              Promos Modificables
+            </h3>
+            <p className="text-slate-400 text-xs">
+              Cambia los ingredientes.
+            </p>
+          </div>
+        </button>
+
+        {/* Card 3: Neo-Lab */}
+        <button
+          onClick={() => scrollTo("neolab")}
+          className="group relative p-5 rounded-2xl bg-slate-900/60 border border-white/10 hover:border-fuchsia-500/50 hover:bg-fuchsia-900/20 transition-all duration-300 flex items-center gap-4 text-left"
+        >
+          <Zap size={28} className="text-fuchsia-400 shrink-0" />
+          <div>
+            <h3 className="font-bold text-white text-base">Neo-Lab</h3>
+            <p className="text-slate-400 text-xs">
+              Crea tu roll desde cero.
+            </p>
+          </div>
+        </button>
+
+        {/* Card 4: Veggie */}
+        <button
+          onClick={() => scrollTo("veggielab")}
+          className="group relative p-5 rounded-2xl bg-slate-900/60 border border-white/10 hover:border-cyan-500/50 hover:bg-cyan-900/20 transition-all duration-300 flex items-center gap-4 text-left"
+        >
+          <Eye size={28} className="text-cyan-400 shrink-0" />
+          <div>
+            <h3 className="font-bold text-white text-base">
+              Roll Vegetariano
+            </h3>
+            <p className="text-slate-400 text-xs">
+              Opciones 100% veggie.
+            </p>
+          </div>
+        </button>
+
+        {/* Card 5: Bebidas */}
+        <button
+          onClick={() => scrollTo("menu-bebidas")}
+          className="group relative p-5 rounded-2xl bg-slate-900/60 border border-white/10 hover:border-fuchsia-500/50 hover:bg-fuchsia-900/20 transition-all duration-300 flex items-center gap-4 text-left"
+        >
+          <ShoppingBag size={28} className="text-fuchsia-400 shrink-0" />
+          <div>
+            <h3 className="font-bold text-white text-base">
+              Bebidas y Extras
+            </h3>
+            <p className="text-slate-400 text-xs">
+              Acompaña tu pedido.
+            </p>
+          </div>
+        </button>
+      </div>
+
+      <div className="mt-12 animate-in fade-in duration-500 delay-300">
+        <button
+          onClick={() => scrollTo("menu-estaticas")}
+          className="text-slate-400 flex items-center gap-2 mx-auto hover:text-white"
+        >
+          O ver el menú completo <ArrowDown size={16} />
+        </button>
       </div>
     </header>
   );
@@ -1691,6 +2129,7 @@ function App() {
   const [selectedPromo, setSelectedPromo] = useState(null);
   const [selectedStaticPromo, setSelectedStaticPromo] = useState(null);
   const [isNeoLabOpen, setIsNeoLabOpen] = useState(false);
+  const [isVeggieLabOpen, setIsVeggieLabOpen] = useState(false); // <-- NUEVO ESTADO
   const [view, setView] = useState("MENU");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Nuevo estado
   const [isMenuDropdownOpen, setIsMenuDropdownOpen] = useState(false); // Estado para el dropdown de menú
@@ -1747,11 +2186,19 @@ function App() {
     setIsCartOpen(true);
   };
 
+  // --- FUNCIONES SEPARADAS PARA AÑADIR ROLLS ---
   const handleCustomRollToCart = (customRoll) => {
     setCartItems([...cartItems, customRoll]);
-    setIsNeoLabOpen(false);
+    setIsNeoLabOpen(false); // Cierra modal Neo-Lab
     setIsCartOpen(true);
   };
+
+  const handleVeggieRollToCart = (veggieRoll) => {
+    setCartItems([...cartItems, veggieRoll]);
+    setIsVeggieLabOpen(false); // Cierra modal Veggie
+    setIsCartOpen(true);
+  };
+  // --- FIN FUNCIONES ---
 
   const generateWhatsAppMessage = (formData) => {
     // --- CÁLCULO DE DESPACHO ---
@@ -1816,7 +2263,7 @@ function App() {
             .map((fid) => getFillingById(fid).name)
             .join(", ")}\n`;
         });
-      } else if (item.type === "CUSTOM") {
+      } else if (item.type === "CUSTOM" || item.type === "VEGGIE") { // <-- LÓGICA ACTUALIZADA
         msg += `   ➤ Base: ${
           WRAPPERS[item.wrapperKey].name
         }\n      Rellenos: ${item.fillings
@@ -1969,6 +2416,19 @@ function App() {
                   >
                     Crea tu Roll (Neo-Lab)
                   </a>
+                  {/* --- INICIO: NUEVO ENLACE VEGGIE --- */}
+                  <a
+                    href="#veggielab"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setView("MENU");
+                      scrollTo("veggielab");
+                    }}
+                    className="block px-4 py-2 rounded-lg text-sm text-slate-300 hover:bg-cyan-500/20 hover:text-cyan-300"
+                  >
+                    Roll Vegetariano
+                  </a>
+                  {/* --- FIN: NUEVO ENLACE VEGGIE --- */}
                   <a
                     href="#menu-bebidas"
                     onClick={(e) => {
@@ -2101,6 +2561,19 @@ function App() {
               >
                 Crea tu Roll
               </a>
+              {/* --- INICIO: NUEVO ENLACE VEGGIE --- */}
+              <a
+                href="#veggielab"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setView("MENU");
+                  scrollTo("veggielab");
+                }}
+                className="text-2xl font-bold text-white hover:text-cyan-400"
+              >
+                Roll Vegetariano
+              </a>
+              {/* --- FIN: NUEVO ENLACE VEGGIE --- */}
               <a
                 href="#menu-bebidas"
                 onClick={(e) => {
@@ -2148,7 +2621,7 @@ function App() {
       <div className="grow">
         {view === "MENU" && (
           <main className="animate-in fade-in">
-            <HeroSection />
+            <HeroSection scrollTo={scrollTo} />
 
             {/* --- CAMBIO 1: ORDEN DE SECCIONES --- */}
             <section id="menu" className="container mx-auto px-4 sm:px-6 py-20">
@@ -2279,14 +2752,17 @@ function App() {
               </div>
               {/* --- FIN CAMBIO 1 --- */}
 
-              <h2 className="text-3xl font-black text-white mb-4 border-l-4 border-cyan-500 pl-4">
+              <h2
+                id="neolab"
+                className="text-3xl font-black text-white mb-4 border-l-4 border-fuchsia-500 pl-4"
+              >
                 Crea tu Roll (Neo-Lab)
               </h2>
               <p className="text-slate-400 text-sm mb-8 max-w-2xl pl-5">
-                ¿No encuentras tu roll perfecto? Diséñalo aquí.
+                ¿No encuentras tu roll perfecto? Diséñalo aquí con cualquier
+                ingrediente.
               </p>
               <div
-                id="neolab"
                 className="bg-gradient-to-r from-fuchsia-900/20 to-slate-900/50 rounded-[3rem] border border-fuchsia-500/20 p-8 sm:p-12 flex flex-col sm:flex-row items-center justify-between gap-8 mb-16"
               >
                 <div className="relative z-10">
@@ -2295,7 +2771,7 @@ function App() {
                   </h3>
                   <p className="text-slate-300 max-w-md">
                     Diseña un roll único de 10 piezas desde cero. Elige
-                    envoltura y 3 rellenos.
+                    envoltura y 3 rellenos (Básico, Medio y Especial).
                   </p>
                 </div>
                 <GlowingButton
@@ -2306,6 +2782,39 @@ function App() {
                   Entrar al Lab
                 </GlowingButton>
               </div>
+
+              {/* --- INICIO: NUEVA SECCIÓN VEGETARIANA --- */}
+              <h2
+                id="veggielab"
+                className="text-3xl font-black text-white mb-4 border-l-4 border-cyan-500 pl-4"
+              >
+                Roll Vegetariano
+              </h2>
+              <p className="text-slate-400 text-sm mb-8 max-w-2xl pl-5">
+                Crea tu roll perfecto usando solo ingredientes de nuestra
+                selección vegetariana.
+              </p>
+              <div
+                className="bg-gradient-to-r from-cyan-900/20 to-slate-900/50 rounded-[3rem] border border-cyan-500/20 p-8 sm:p-12 flex flex-col sm:flex-row items-center justify-between gap-8 mb-16"
+              >
+                <div className="relative z-10">
+                  <h3 className="text-3xl font-black text-white mb-4 flex items-center gap-3">
+                    <Eye className="text-cyan-500" /> Sección Vegetariana
+                  </h3>
+                  <p className="text-slate-300 max-w-md">
+                    Diseña un roll veggie de 10 piezas. Elige tu envoltura y 3
+                    ingredientes de la lista vegetariana.
+                  </p>
+                </div>
+                <GlowingButton
+                  variant="primary" // Botón Cyan
+                  className="min-w-[200px]"
+                  onClick={() => setIsVeggieLabOpen(true)}
+                >
+                  Crear Roll Veggie
+                </GlowingButton>
+              </div>
+              {/* --- FIN: NUEVA SECCIÓN VEGETARIANA --- */}
 
               <h2
                 id="menu-bebidas"
@@ -2404,9 +2913,18 @@ function App() {
           {isNeoLabOpen && (
             <CustomRollBuilder
               onClose={() => setIsNeoLabOpen(false)}
-              onAddToCart={handleCustomRollToCart}
+              onAddToCart={handleCustomRollToCart} // Usa la función específica
             />
           )}
+
+          {/* --- INICIO: RENDERIZADO MODAL VEGGIE --- */}
+          {isVeggieLabOpen && (
+            <VeggieRollBuilder
+              onClose={() => setIsVeggieLabOpen(false)}
+              onAddToCart={handleVeggieRollToCart} // Usa la función específica
+            />
+          )}
+          {/* --- FIN: RENDERIZADO MODAL VEGGIE --- */}
 
           <CartDrawer
             isOpen={isCartOpen}
