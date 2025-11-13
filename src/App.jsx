@@ -29,7 +29,8 @@ import {
 } from "lucide-react";
 
 // --- DATOS DE NEGOCIO ---
-const LOCAL_PHONE_NUMBER = "56959984791;
+// 1. NÚMERO DE TELÉFONO ACTUALIZADO
+const LOCAL_PHONE_NUMBER = "56959984791";
 const WHATSAPP_LINK = `https://wa.me/${LOCAL_PHONE_NUMBER}`;
 const LOCAL_COMMUNE = "Santiago"; // <<< ¡IMPORTANTE! Cambia esto por la comuna de tu local (ej: "Providencia", "Quilicura", etc.)
 
@@ -1116,8 +1117,9 @@ function CheckoutView({ cartItems, total, onBack, onCompleteOrder }) {
       >
         <ArrowLeft size={20} /> Volver al Menú
       </button>
+      {/* 2. TÍTULO ACTUALIZADO */}
       <h2 className="text-3xl font-black text-white mb-8 flex items-center gap-3 border-b border-white/10 pb-4">
-        <CreditCard className="text-fuchsia-500" /> Finalizar Compra
+        <CreditCard className="text-fuchsia-500" /> Finalizar Pedido
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Formulario */}
@@ -1309,9 +1311,15 @@ function CheckoutView({ cartItems, total, onBack, onCompleteOrder }) {
                     </div>
                   </div>
                 ))}
+                {/* 3. TEXTO DE INSTRUCCIÓN DE PAGO (CHECKOUT) ACTUALIZADO */}
                 <div className="mt-2 pt-2 text-fuchsia-300 text-xs flex items-start gap-2">
-                  <Info size={16} className="shrink-0" /> Recuerda enviar el
-                  comprobante por WhatsApp al finalizar.
+                  <Info size={16} className="shrink-0 mt-0.5" />
+                  <div>
+                    <strong>Importante:</strong> Al presionar "Confirmar y Enviar
+                    Pedido", se abrirá WhatsApp para que envíes tu orden.{" "}
+                    <strong>Después de enviar el pedido</strong>, realiza la
+                    transferencia y envía el comprobante al mismo chat.
+                  </div>
                 </div>
               </div>
             ) : (
@@ -1431,12 +1439,15 @@ function ThankYouView({ onReset }) {
       <p className="text-xl text-slate-300 max-w-md mb-8">
         Tu pedido se encuentra en proceso de preparación en nuestro laboratorio.
       </p>
+      {/* 3. TEXTO DE INSTRUCCIÓN DE PAGO (GRACIAS) ACTUALIZADO */}
       <div className="bg-fuchsia-900/30 border border-fuchsia-500/30 p-4 rounded-xl max-w-md text-fuchsia-200 text-sm mb-8 flex items-start gap-3">
-        <Info className="shrink-0" />
-        <p>
-          Si elegiste pagar con <strong>Transferencia</strong>, recuerda enviar
-          el comprobante al WhatsApp que se abrirá a continuación para validar
-          tu pedido.
+        <Info className="shrink-0 mt-0.5" />
+        <p className="text-left">
+          Tu pedido ha sido enviado a nuestro WhatsApp. Si elegiste pagar con{" "}
+          <strong>Transferencia</strong>, por favor, realiza el pago a los datos
+          indicados y{" "}
+          <strong>envía el comprobante al mismo chat de WhatsApp</strong> para
+          confirmar tu orden.
         </p>
       </div>
       <GlowingButton onClick={onReset}>Volver al Inicio</GlowingButton>
