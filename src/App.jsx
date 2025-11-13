@@ -92,6 +92,51 @@ const WRAPPERS = {
 };
 
 // --- DATOS DE MENÚ ---
+const STATIC_PROMOS = [
+  {
+    id: "s1",
+    name: "Pack Intro (20p)",
+    description: "10 California (Sésamo), 10 Frito (Pollo, Queso).",
+    basePrice: 10990, // Precio fijo
+    type: "STATIC",
+    image: "https://images.unsplash.com/photo-1617196019474-271a6f25f8da?auto=format&fit=crop&w=800&q=80",
+    rolls: [
+      {
+        id: "s1_r1",
+        name: "California Roll",
+        pieces: 10,
+        wrapper: "sesamo",
+        defaultFillings: ["kanikama", "palta_relleno", "queso"],
+      },
+      {
+        id: "s1_r2",
+        name: "Frito Roll",
+        pieces: 10,
+        wrapper: "frito",
+        defaultFillings: ["pollo", "queso", "cebollin"],
+      },
+    ],
+  },
+  {
+    id: "s2",
+    name: "Salmon Lover (10p)",
+    description: "10 Rolls envueltos en Salmón con palta y queso.",
+    basePrice: 8990,
+    type: "STATIC",
+    image: "https://images.unsplash.com/photo-1583623025817-d180a2221d0a?auto=format&fit=crop&w=800&q=80",
+    rolls: [
+      {
+        id: "s2_r1",
+        name: "Salmon Roll",
+        pieces: 10,
+        wrapper: "salmon",
+        defaultFillings: ["palta_relleno", "queso", "ciboulette_relleno"],
+      },
+    ],
+  },
+];
+
+
 const MODIFIABLE_PROMOS = [
   {
     id: "promo1",
@@ -180,50 +225,6 @@ const MODIFIABLE_PROMOS = [
         pieces: 10,
         wrapper: "sesamo",
         defaultFillings: ["palta_relleno", "queso", "kanikama"],
-      },
-    ],
-  },
-];
-
-const STATIC_PROMOS = [
-  {
-    id: "s1",
-    name: "Pack Intro (20p)",
-    description: "10 California (Sésamo), 10 Frito (Pollo, Queso).",
-    basePrice: 10990, // Precio fijo
-    type: "STATIC",
-    image: "https://images.unsplash.com/photo-1617196019474-271a6f25f8da?auto=format&fit=crop&w=800&q=80",
-    rolls: [
-      {
-        id: "s1_r1",
-        name: "California Roll",
-        pieces: 10,
-        wrapper: "sesamo",
-        defaultFillings: ["kanikama", "palta_relleno", "queso"],
-      },
-      {
-        id: "s1_r2",
-        name: "Frito Roll",
-        pieces: 10,
-        wrapper: "frito",
-        defaultFillings: ["pollo", "queso", "cebollin"],
-      },
-    ],
-  },
-  {
-    id: "s2",
-    name: "Salmon Lover (10p)",
-    description: "10 Rolls envueltos en Salmón con palta y queso.",
-    basePrice: 8990,
-    type: "STATIC",
-    image: "https://images.unsplash.com/photo-1583623025817-d180a2221d0a?auto=format&fit=crop&w=800&q=80",
-    rolls: [
-      {
-        id: "s2_r1",
-        name: "Salmon Roll",
-        pieces: 10,
-        wrapper: "salmon",
-        defaultFillings: ["palta_relleno", "queso", "ciboulette_relleno"],
       },
     ],
   },
